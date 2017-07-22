@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Nop.Core;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Forums;
@@ -15,7 +15,7 @@ using Nop.Services.Helpers;
 using Nop.Services.Localization;
 using Nop.Services.Media;
 using Nop.Services.Seo;
-using Nop.Web.Framework;
+using Nop.Web.Framework.Extensions;
 using Nop.Web.Models.Boards;
 using Nop.Web.Models.Common;
 
@@ -66,7 +66,7 @@ namespace Nop.Web.Factories
         #endregion
 
         #region Utilities
-
+        
         /// <summary>
         /// Get the list of forum topic types
         /// </summary>
@@ -120,7 +120,7 @@ namespace Nop.Web.Factories
 
             return forumsList;
         }
-
+        
         #endregion
 
         #region Methods
@@ -642,7 +642,7 @@ namespace Nop.Web.Factories
             var model = new SearchModel();
 
             int pageSize = 10;
-
+            
             // Create the values for the "Limit results to previous" select list
             var limitList = new List<SelectListItem>
             {
@@ -738,7 +738,7 @@ namespace Nop.Web.Factories
                 }
             };
             model.WithinList = withinList;
-
+           
             int forumIdSelected;
             int.TryParse(forumId, out forumIdSelected);
             model.ForumIdSelected = forumIdSelected;
@@ -965,6 +965,6 @@ namespace Nop.Web.Factories
         }
 
 
-        #endregion
+#endregion
     }
 }

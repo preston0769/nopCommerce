@@ -1,7 +1,7 @@
 using System;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
-using System.Web;
 
 namespace Nop.Core.Html
 {
@@ -89,7 +89,9 @@ namespace Nop.Core.Html
                     text = StripTags(text);
                 }
 
-                text = allowHtml ? EnsureOnlyAllowedHtml(text) : HttpUtility.HtmlEncode(text);
+
+                text = allowHtml ? EnsureOnlyAllowedHtml(text) : WebUtility.HtmlEncode(text);
+
 
                 if (convertPlainTextToHtml)
                 {
@@ -180,9 +182,9 @@ namespace Nop.Core.Html
         {
             if (String.IsNullOrEmpty(text))
                 return string.Empty;
-
+            
             if (decode)
-                text = HttpUtility.HtmlDecode(text);
+                text = WebUtility.HtmlDecode(text);
 
             text = text.Replace("<br>", "\n");
             text = text.Replace("<br >", "\n");
@@ -222,6 +224,6 @@ namespace Nop.Core.Html
             }
             return builder.ToString();
         }
-        #endregion
+#endregion
     }
 }

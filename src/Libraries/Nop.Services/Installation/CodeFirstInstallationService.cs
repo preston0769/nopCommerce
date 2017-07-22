@@ -1,7 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using Nop.Core;
 using Nop.Core.Data;
 using Nop.Core.Domain;
@@ -38,6 +34,12 @@ using Nop.Services.Helpers;
 using Nop.Services.Localization;
 using Nop.Services.Media;
 using Nop.Services.Seo;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
+using Microsoft.AspNetCore.Hosting;
+
 
 namespace Nop.Services.Installation
 {
@@ -100,6 +102,7 @@ namespace Nop.Services.Installation
         private readonly IRepository<StockQuantityHistory> _stockQuantityHistoryRepository;
         private readonly IGenericAttributeService _genericAttributeService;
         private readonly IWebHelper _webHelper;
+        private readonly IHostingEnvironment _hostingEnvironment;
 
         #endregion
 
@@ -159,7 +162,8 @@ namespace Nop.Services.Installation
             IRepository<SearchTerm> searchTermRepository,
             IRepository<StockQuantityHistory> stockQuantityHistoryRepository,
             IGenericAttributeService genericAttributeService,
-            IWebHelper webHelper)
+            IWebHelper webHelper,
+            IHostingEnvironment hostingEnvironment)
         {
             this._storeRepository = storeRepository;
             this._measureDimensionRepository = measureDimensionRepository;
@@ -216,11 +220,17 @@ namespace Nop.Services.Installation
             this._stockQuantityHistoryRepository = stockQuantityHistoryRepository;
             this._genericAttributeService = genericAttributeService;
             this._webHelper = webHelper;
+            this._hostingEnvironment = hostingEnvironment;
         }
 
         #endregion
 
         #region Utilities
+
+        protected virtual string GetSamplesPath()
+        {
+            return Path.Combine(_hostingEnvironment.WebRootPath, "images\\samples\\");
+        }
 
         protected virtual void InstallStores()
         {
@@ -6638,7 +6648,7 @@ namespace Nop.Services.Installation
         {
             //pictures
             var pictureService = EngineContext.Current.Resolve<IPictureService>();
-            var sampleImagesPath = CommonHelper.MapPath("~/content/samples/");
+            var sampleImagesPath = GetSamplesPath();
 
 
 
@@ -6976,7 +6986,7 @@ namespace Nop.Services.Installation
         protected virtual void InstallManufacturers()
         {
             var pictureService = EngineContext.Current.Resolve<IPictureService>();
-            var sampleImagesPath = CommonHelper.MapPath("~/content/samples/");
+            var sampleImagesPath = GetSamplesPath();
 
             var manufacturerTemplateInGridAndLines =
                 _manufacturerTemplateRepository.Table.FirstOrDefault(pt => pt.Name == "Products in Grid or Lines");
@@ -7080,11 +7090,11 @@ namespace Nop.Services.Installation
 
             //pictures
             var pictureService = EngineContext.Current.Resolve<IPictureService>();
-            var sampleImagesPath = CommonHelper.MapPath("~/content/samples/");
+            var sampleImagesPath = GetSamplesPath();
 
             //downloads
             var downloadService = EngineContext.Current.Resolve<IDownloadService>();
-            var sampleDownloadsPath = CommonHelper.MapPath("~/content/samples/");
+            var sampleDownloadsPath = GetSamplesPath();
 
             //products
             var allProducts = new List<Product>();

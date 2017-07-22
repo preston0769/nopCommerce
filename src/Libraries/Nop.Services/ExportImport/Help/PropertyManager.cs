@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using OfficeOpenXml;
 using OfficeOpenXml.Style;
 
@@ -185,14 +185,14 @@ namespace Nop.Services.ExportImport.Help
             get { return _properties.Values.ToArray(); }
         }
 
-
+        
         public void SetSelectList(string propertyName, SelectList list)
         {
             var tempProperty = GetProperty(propertyName);
             if (tempProperty != null)
                 tempProperty.DropDownElements = list;
         }
-        
+
         public bool IsCaption
         {
             get { return _properties.Values.All(p => p.IsCaption); }

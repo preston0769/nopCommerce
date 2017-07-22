@@ -35,7 +35,7 @@ namespace Nop.Services.Configuration
 
         private readonly IRepository<Setting> _settingRepository;
         private readonly IEventPublisher _eventPublisher;
-        private readonly ICacheManager _cacheManager;
+        private readonly IStaticCacheManager _cacheManager;
 
         #endregion
 
@@ -44,10 +44,11 @@ namespace Nop.Services.Configuration
         /// <summary>
         /// Ctor
         /// </summary>
-        /// <param name="cacheManager">Cache manager</param>
+        /// <param name="cacheManager">Static cache manager</param>
         /// <param name="eventPublisher">Event publisher</param>
         /// <param name="settingRepository">Setting repository</param>
-        public SettingService(ICacheManager cacheManager, IEventPublisher eventPublisher,
+        public SettingService(IStaticCacheManager cacheManager, 
+            IEventPublisher eventPublisher,
             IRepository<Setting> settingRepository)
         {
             this._cacheManager = cacheManager;
@@ -354,15 +355,24 @@ namespace Nop.Services.Configuration
         /// <param name="storeId">Store identifier for which settigns should be loaded</param>
         public virtual T LoadSetting<T>(int storeId = 0) where T : ISettings, new()
         {
-            var settings = Activator.CreateInstance<T>();
+            return (T)LoadSetting(typeof(T), storeId);
+        }
+        /// <summary>
+        /// Load settings
+        /// </summary>
+        /// <param name="type">Type</param>
+        /// <param name="storeId">Store identifier for which settigns should be loaded</param>
+        public virtual ISettings LoadSetting(Type type, int storeId = 0)
+        {
+            var settings = Activator.CreateInstance(type);
 
-            foreach (var prop in typeof(T).GetProperties())
+            foreach (var prop in type.GetProperties())
             {
                 // get properties we can read and write to
                 if (!prop.CanRead || !prop.CanWrite)
                     continue;
 
-                var key = typeof(T).Name + "." + prop.Name;
+                var key = type.Name + "." + prop.Name;
                 //load by store
                 var setting = GetSettingByKey<string>(key, storeId: storeId, loadSharedValueIfNotFound: true);
                 if (setting == null)
@@ -380,7 +390,7 @@ namespace Nop.Services.Configuration
                 prop.SetValue(settings, value, null);
             }
 
-            return settings;
+            return settings as ISettings;
         }
 
         /// <summary>

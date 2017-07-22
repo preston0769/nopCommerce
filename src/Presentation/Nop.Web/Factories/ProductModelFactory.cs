@@ -3,8 +3,9 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
 using System.Linq;
+using System.Net;
 using System.Web;
-using System.Web.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 using Nop.Core;
 using Nop.Core.Caching;
 using Nop.Core.Domain.Catalog;
@@ -71,7 +72,7 @@ namespace Nop.Web.Factories
         private readonly CustomerSettings _customerSettings;
         private readonly CaptchaSettings _captchaSettings;
         private readonly SeoSettings _seoSettings;
-        private readonly ICacheManager _cacheManager;
+        private readonly IStaticCacheManager _cacheManager;
 
         #endregion
 
@@ -108,7 +109,7 @@ namespace Nop.Web.Factories
             CustomerSettings customerSettings,
             CaptchaSettings captchaSettings,
             SeoSettings seoSettings,
-            ICacheManager cacheManager)
+            IStaticCacheManager cacheManager)
         {
             this._specificationAttributeService = specificationAttributeService;
             this._categoryService = categoryService;
@@ -1537,10 +1538,10 @@ namespace Nop.Web.Factories
                     switch (psa.AttributeType)
                     {
                         case SpecificationAttributeType.Option:
-                            m.ValueRaw = HttpUtility.HtmlEncode(psa.SpecificationAttributeOption.GetLocalized(x => x.Name));
+                            m.ValueRaw = WebUtility.HtmlEncode(psa.SpecificationAttributeOption.GetLocalized(x => x.Name));
                             break;
                         case SpecificationAttributeType.CustomText:
-                            m.ValueRaw = HttpUtility.HtmlEncode(psa.CustomValue);
+                            m.ValueRaw = WebUtility.HtmlEncode(psa.CustomValue);
                             break;
                         case SpecificationAttributeType.CustomHtmlText:
                             m.ValueRaw = psa.CustomValue;

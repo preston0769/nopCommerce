@@ -1,6 +1,5 @@
 ﻿@model CheckoutShippingAddressModel
-@using System.Text;
-@using Nop.Web.Models.Checkout;
+@using System.Text
 <div class="checkout-data">
     @if (Model.AllowPickUpInStore && !Model.PickUpInStoreOnly && Model.PickupPoints.Any())
     {
@@ -182,7 +181,7 @@
     @if (!Model.PickUpInStoreOnly)
     {
         <div class="shipping-addresses" id="shipping-addresses-form">
-            @Html.Widget("op_checkout_shipping_address_top")
+            @await Component.InvokeAsync("Widget", new { widgetZone = "op_checkout_shipping_address_top" })
             @if (Model.ExistingAddresses.Count > 0)
             {
                 <div class="section select-shipping-address">
@@ -223,26 +222,24 @@
                     </div>
                 </div>
             }
-            @Html.Widget("op_checkout_shipping_address_middle")
+            @await Component.InvokeAsync("Widget", new { widgetZone = "op_checkout_shipping_address_middle" })
             <div class="section new-shipping-address" id="shipping-new-address-form">
                 <div class="enter-address">
                     @{
                         var validationSummary = Html.ValidationSummary(true);
                     }
-                    @if (!MvcHtmlString.IsNullOrEmpty(validationSummary))
+                    @if (!String.IsNullOrEmpty(validationSummary.ToHtmlString()))
                     {
                         <div class="message-error">@validationSummary</div>
                     }
                     @{
-                        var dataDictAddress = new ViewDataDictionary();
-                        //Merge ModelState (required for validation)
-                        dataDictAddress.ModelState.Merge(ViewData.ModelState);
+                        var dataDictAddress = new ViewDataDictionary(ViewData);
                         dataDictAddress.TemplateInfo.HtmlFieldPrefix = "ShippingNewAddress";
-                        @Html.Partial("_CreateOrUpdateAddress", Model.NewAddress, dataDictAddress)
+                        @await Html.PartialAsync("_CreateOrUpdateAddress", Model.NewAddress, dataDictAddress)
                     }
                 </div>
             </div>
-            @Html.Widget("op_checkout_shipping_address_bottom")
+            @await Component.InvokeAsync("Widget", new { widgetZone = "op_checkout_shipping_address_bottom" })
         </div>
     }
 </div>

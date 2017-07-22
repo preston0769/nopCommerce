@@ -1,12 +1,11 @@
 ﻿@model TopicModel
 @using Nop.Core.Domain.Seo
-@using Nop.Core.Infrastructure
-@using Nop.Web.Models.Topics;
+@inject SeoSettings seoSettings
 @{
     var isPopup = ViewBag.IsPopup;
     if (isPopup == null || isPopup == false)
     {
-        Layout = "~/Views/Shared/_ColumnsOne.cshtml";
+        Layout = "_ColumnsOne";
     }
 
     if (!Model.IsPasswordProtected)
@@ -18,10 +17,9 @@
         Html.AddMetaKeywordParts(Model.MetaKeywords);
     }
 
-    var canonicalUrlsEnabled = EngineContext.Current.Resolve<SeoSettings>().CanonicalUrlsEnabled;
-    if (canonicalUrlsEnabled)
+    if (seoSettings.CanonicalUrlsEnabled)
     {
-        var topicUrl = Url.RouteUrl("Topic", new { SeName = Model.SeName }, this.Request.Url.Scheme);
+        var topicUrl = Url.RouteUrl("Topic", new { SeName = Model.SeName }, this.Url.ActionContext.HttpContext.Request.Scheme);
         Html.AddCanonicalUrlParts(topicUrl);
     }
 

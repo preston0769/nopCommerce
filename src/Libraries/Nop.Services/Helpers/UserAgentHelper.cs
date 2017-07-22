@@ -1,7 +1,7 @@
 using System;
-using System.Diagnostics;
 using System.Runtime.CompilerServices;
-using System.Web;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Net.Http.Headers;
 using Nop.Core;
 using Nop.Core.Configuration;
 using Nop.Core.Infrastructure;
@@ -13,20 +13,25 @@ namespace Nop.Services.Helpers
     /// </summary>
     public partial class UserAgentHelper : IUserAgentHelper
     {
-        private readonly NopConfig _config;
-        private readonly HttpContextBase _httpContext;
+        #region Fields
+
+        private readonly NopConfig _nopConfig;
+        private readonly IHttpContextAccessor _httpContextAccessor;
         private static readonly object _locker = new object();
 
-        /// <summary>
-        /// Ctor
-        /// </summary>
-        /// <param name="config">Config</param>
-        /// <param name="httpContext">HTTP context</param>
-        public UserAgentHelper(NopConfig config, HttpContextBase httpContext)
+        #endregion
+
+        #region Ctor
+
+        public UserAgentHelper(NopConfig nopConfig, IHttpContextAccessor httpContextAccessor)
         {
-            this._config = config;
-            this._httpContext = httpContext;
+            this._nopConfig = nopConfig;
+            this._httpContextAccessor = httpContextAccessor;
         }
+
+        #endregion
+
+        #region Utilities
 
         [MethodImpl(MethodImplOptions.Synchronized)]
         protected virtual BrowscapXmlHelper GetBrowscapXmlHelper()
@@ -35,7 +40,7 @@ namespace Nop.Services.Helpers
                 return Singleton<BrowscapXmlHelper>.Instance;
 
             //no database created
-            if (String.IsNullOrEmpty(_config.UserAgentStringsPath))
+            if (string.IsNullOrEmpty(_nopConfig.UserAgentStringsPath))
                 return null;
 
             //prevent multi loading data
@@ -45,8 +50,10 @@ namespace Nop.Services.Helpers
                 if (Singleton<BrowscapXmlHelper>.Instance != null)
                     return Singleton<BrowscapXmlHelper>.Instance;
 
-                var userAgentStringsPath = CommonHelper.MapPath(_config.UserAgentStringsPath);
-                var crawlerOnlyUserAgentStringsPath = string.IsNullOrEmpty(_config.CrawlerOnlyUserAgentStringsPath) ? string.Empty : CommonHelper.MapPath(_config.CrawlerOnlyUserAgentStringsPath);
+                var userAgentStringsPath = CommonHelper.MapPath(_nopConfig.UserAgentStringsPath);
+                var crawlerOnlyUserAgentStringsPath = !string.IsNullOrEmpty(_nopConfig.CrawlerOnlyUserAgentStringsPath)
+                    ? CommonHelper.MapPath(_nopConfig.CrawlerOnlyUserAgentStringsPath)
+                    : string.Empty;
 
                 var browscapXmlHelper = new BrowscapXmlHelper(userAgentStringsPath, crawlerOnlyUserAgentStringsPath);
                 Singleton<BrowscapXmlHelper>.Instance = browscapXmlHelper;
@@ -55,13 +62,17 @@ namespace Nop.Services.Helpers
             }
         }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
         /// Get a value indicating whether the request is made by search engine (web crawler)
         /// </summary>
         /// <returns>Result</returns>
         public virtual bool IsSearchEngine()
         {
-            if (_httpContext == null)
+            if (_httpContextAccessor == null || _httpContextAccessor.HttpContext == null)
                 return false;
 
             //we put required logic in try-catch block
@@ -74,15 +85,31 @@ namespace Nop.Services.Helpers
                 if (bowscapXmlHelper == null)
                     return false;
 
-                var userAgent = _httpContext.Request.UserAgent;
+                var userAgent = _httpContextAccessor.HttpContext.Request.Headers[HeaderNames.UserAgent];
                 return bowscapXmlHelper.IsCrawler(userAgent);
             }
-            catch (Exception exc)
+            catch
             {
-                Debug.WriteLine(exc);
             }
 
             return false;
         }
+
+        /// <summary>
+        /// Get a value indicating whether the request is made by IE8 browser
+        /// </summary>
+        /// <returns></returns>
+        public virtual bool IsIe8()
+        {
+            if (_httpContextAccessor == null || _httpContextAccessor.HttpContext == null)
+                return false;
+
+            //https://blogs.msdn.microsoft.com/ie/2009/01/09/the-internet-explorer-8-user-agent-string-updated-edition/
+
+            var userAgent = _httpContextAccessor.HttpContext.Request.Headers[HeaderNames.UserAgent].ToString();
+            return !string.IsNullOrEmpty(userAgent) && userAgent.IndexOf("MSIE 8.0", StringComparison.InvariantCultureIgnoreCase) >= 0;
+        }
+        
+        #endregion
     }
 }

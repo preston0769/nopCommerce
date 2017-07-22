@@ -14,6 +14,7 @@ using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Shipping;
 using Nop.Core.Domain.Tax;
 using Nop.Core.Domain.Vendors;
+using Nop.Core.Extensions;
 using Nop.Services.Catalog;
 using Nop.Services.Common;
 using Nop.Services.Customers;
@@ -510,9 +511,9 @@ namespace Nop.Services.ExportImport
             return _customerAttributeFormatter.FormatAttributes(selectedCustomerAttributes, ";");
         }
         
-        #endregion
+#endregion
 
-        #region Methods
+#region Methods
 
         /// <summary>
         /// Export manufacturer list to xml
@@ -1525,6 +1526,6 @@ namespace Nop.Services.ExportImport
             return sb.ToString();
         }
 
-        #endregion
+#endregion
     }
 }

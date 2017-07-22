@@ -432,10 +432,11 @@ namespace Nop.Services.Customers
             var customerSettings = EngineContext.Current.Resolve<CustomerSettings>();
             if (customerSettings.PasswordLifetime == 0)
                 return false;
-
+            
             //cache result between HTTP requests 
-            var cacheManager = EngineContext.Current.ContainerManager.Resolve<ICacheManager>("nop_cache_static");
+            var cacheManager = EngineContext.Current.Resolve<IStaticCacheManager>();
             var cacheKey = string.Format(CustomerCacheEventConsumer.CUSTOMER_PASSWORD_LIFETIME, customer.Id);
+
             //get current password usage time
             var currentLifetime = cacheManager.Get(cacheKey, () =>
             {

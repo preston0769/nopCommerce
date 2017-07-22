@@ -9,6 +9,7 @@ using Nop.Core.Domain.Common;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Orders;
 using Nop.Core.Domain.Shipping;
+using Nop.Core.Extensions;
 using Nop.Core.Plugins;
 using Nop.Services.Catalog;
 using Nop.Services.Common;
@@ -806,7 +807,7 @@ namespace Nop.Services.Shipping
                 throw new ArgumentNullException("cart");
 
             var result = new GetShippingOptionResponse();
-            
+
             //create a package
             bool shippingFromMultipleLocations;
             var shippingOptionRequests = CreateShippingOptionRequests(cart, shippingAddress, storeId, out shippingFromMultipleLocations);

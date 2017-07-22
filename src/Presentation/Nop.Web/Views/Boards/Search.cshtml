@@ -1,9 +1,7 @@
-﻿@model SearchModel
-@using Nop.Core.Domain.Forums;
-@using Nop.Web.Models.Boards;
-@using Nop.Web.Models.Common;
+﻿@model Nop.Web.Models.Boards.SearchModel
+@using Nop.Core.Domain.Forums
 @{   
-    Layout = "~/Views/Shared/_ColumnsOne.cshtml";
+    Layout = "_ColumnsOne";
 
     //title
     Html.AddTitleParts(T("Forum.PageTitle.Search").Text);
@@ -26,13 +24,13 @@
         }
     }
 </script>
-@Html.Action("ForumBreadcrumb")
+@await Component.InvokeAsync("ForumBreadcrumb")
 <div class="page forum-search-page">
     <div class="page-title">
         <h1>@T("Forum.Search")</h1>
     </div>
 <div class="page-body">
-    @Html.Widget("boards_search_before_searchform")
+    @await Component.InvokeAsync("Widget", new { widgetZone = "boards_search_before_searchform" })
     <div class="search-input">
         @using (Html.BeginRouteForm("Search", FormMethod.Get))
         {
@@ -69,7 +67,7 @@
             </div>
         }
     </div>
-    @Html.Widget("boards_search_after_searchform")
+    @await Component.InvokeAsync("Widget", new { widgetZone = "boards_search_after_searchform" })
     <div class="search-error">
         @Model.Error
     </div>
@@ -99,8 +97,8 @@
                 RouteValues = new ForumSearchRouteValues {adv = adv, searchterms = searchterms, forumId = forumId, within = within, limitDays = limitDays},
             });
         }
-        @Html.Widget("boards_search_before_results")
-        @if (!MvcHtmlString.IsNullOrEmpty(pager))
+        @await Component.InvokeAsync("Widget", new { widgetZone = "boards_search_before_results" })
+        @if (!String.IsNullOrEmpty(pager.ToHtmlString()))
         {
             <div class="pager upper">
                 @pager
@@ -214,7 +212,7 @@
                                     </td>
                                 }
                                 <td class="latest-post">
-                                    @Html.Action("LastPost", new {forumPostId = topic.LastPostId, showTopic = false})
+                                    @await Component.InvokeAsync("ForumLastPost", new { forumPostId = topic.LastPostId, showTopic = false })
                                 </td>
                             </tr>
                         }
@@ -223,13 +221,13 @@
                 </div>
             }
         </div>
-        @if (!MvcHtmlString.IsNullOrEmpty(pager))
+        @if (!String.IsNullOrEmpty(pager.ToHtmlString()))
         {
             <div class="pager lower">
                 @pager
             </div>
         }
-        @Html.Widget("boards_search_after_results")
+        @await Component.InvokeAsync("Widget", new { widgetZone = "boards_search_after_results" })
     </div>
 </div>
 </div>

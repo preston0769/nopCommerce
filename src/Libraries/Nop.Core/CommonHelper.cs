@@ -8,9 +8,7 @@ using System.Net;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Text.RegularExpressions;
-using System.Threading;
 using System.Web;
-using System.Web.Hosting;
 
 namespace Nop.Core
 {
@@ -19,6 +17,8 @@ namespace Nop.Core
     /// </summary>
     public partial class CommonHelper
     {
+        #region Methods
+
         /// <summary>
         /// Ensures the subscriber email or throw.
         /// </summary>
@@ -312,11 +312,10 @@ namespace Nop.Core
         public static void SetTelerikCulture()
         {
             //little hack here
-            //always set culture to 'en-US' (Kendo UI has a bug related to editing decimal values in other cultures). Like currently it's done for admin area in Global.asax.cs
-
+            //always set culture to 'en-US' (Kendo UI has a bug related to editing decimal values in other cultures)
             var culture = new CultureInfo("en-US");
-            Thread.CurrentThread.CurrentCulture = culture;
-            Thread.CurrentThread.CurrentUICulture = culture;
+            CultureInfo.CurrentCulture = culture;
+            CultureInfo.CurrentUICulture = culture;
         }
 
         /// <summary>
@@ -342,16 +341,19 @@ namespace Nop.Core
         /// <returns>The physical path. E.g. "c:\inetpub\wwwroot\bin"</returns>
         public static string MapPath(string path)
         {
-            if (HostingEnvironment.IsHosted)
-            {
-                //hosted
-                return HostingEnvironment.MapPath(path);
-            }
-
-            //not hosted. For example, run in unit tests
-            string baseDirectory = AppDomain.CurrentDomain.BaseDirectory;
             path = path.Replace("~/", "").TrimStart('/').Replace('/', '\\');
-            return Path.Combine(baseDirectory, path);
-        }        
+            return Path.Combine(BaseDirectory, path);
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets application base path
+        /// </summary>
+        internal static string BaseDirectory { get; set; }
+
+        #endregion
     }
 }

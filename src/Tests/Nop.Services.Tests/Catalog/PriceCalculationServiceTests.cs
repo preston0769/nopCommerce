@@ -1,6 +1,7 @@
-﻿using System;
+﻿
+#if NET451
+using System;
 using System.Collections.Generic;
-using Autofac;
 using Nop.Core;
 using Nop.Core.Caching;
 using Nop.Core.Domain.Catalog;
@@ -32,7 +33,7 @@ namespace Nop.Services.Tests.Catalog
         private IPriceCalculationService _priceCalcService;
         private ShoppingCartSettings _shoppingCartSettings;
         private CatalogSettings _catalogSettings;
-        private ICacheManager _cacheManager;
+        private IStaticCacheManager _cacheManager;
 
         private Store _store;
 
@@ -75,6 +76,7 @@ namespace Nop.Services.Tests.Catalog
             nopEngine.Expect(x => x.ContainerManager).Return(containerManager);
             containerManager.Expect(x => x.Resolve<IWorkContext>()).Return(_workContext);
             EngineContext.Replace(nopEngine);
+
         }
 
         [OneTimeTearDown]
@@ -407,3 +409,4 @@ namespace Nop.Services.Tests.Catalog
         }
     }
 }
+#endif
