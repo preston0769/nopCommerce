@@ -1,13 +1,16 @@
 ﻿using System;
-using Nop.Web.Framework;
-using Nop.Web.Framework.Mvc;
 using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
+using Nop.Web.Framework.Models;
 
-namespace Nop.Admin.Models.Customers
+namespace Nop.Web.Areas.Admin.Models.Customers
 {
+    /// <summary>
+    /// Represents an online customer model
+    /// </summary>
     public partial class OnlineCustomerModel : BaseNopEntityModel
     {
+        #region Properties
+
         [NopResourceDisplayName("Admin.Customers.OnlineCustomers.Fields.CustomerInfo")]
         public string CustomerInfo { get; set; }
 
@@ -22,5 +25,7 @@ namespace Nop.Admin.Models.Customers
         
         [NopResourceDisplayName("Admin.Customers.OnlineCustomers.Fields.LastVisitedPage")]
         public string LastVisitedPage { get; set; }
+
+        #endregion
     }
 }

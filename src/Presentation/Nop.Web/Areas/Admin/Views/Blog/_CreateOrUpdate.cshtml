@@ -1,39 +1,23 @@
 ﻿@model BlogPostModel
-@inject IEventPublisher eventPublisher
 
-@Html.ValidationSummary(true)
-@Html.HiddenFor(model => model.Id)
+@{
+    const string hideInfoBlockAttributeName = "BlogPostPage.HideInfoBlock";
+    var hideInfoBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideInfoBlockAttributeName);
 
-<script>
-    $(document).ready(function() {
-        bindBootstrapTabSelectEvent('blog-post-edit');
-    });
-</script>
+    const string hideSeoBlockAttributeName = "BlogPostPage.HideSEOBlock";
+    var hideSeoBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideSeoBlockAttributeName, defaultValue: true);
+}
+
+<div asp-validation-summary="All"></div>
+<input asp-for="Id" type="hidden" />
 
 <div class="content">
     <div class="form-horizontal">
-        <div id="blog-post-edit" class="nav-tabs-custom">
-            <ul class="nav nav-tabs">
-                @Html.RenderBootstrapTabHeader("tab-info", @T("Admin.ContentManagement.Blog.BlogPosts.Info"), true)
-                @Html.RenderBootstrapTabHeader("tab-seo", @T("Admin.Common.SEO"))
-            </ul>
-            <div class="tab-content">
-                @Html.RenderBootstrapTabContent("tab-info", await Html.PartialAsync("_CreateOrUpdate.Info", Model), true)
-                @Html.RenderBootstrapTabContent("tab-seo", await Html.PartialAsync("_CreateOrUpdate.SEO", Model))
-            </div>
-        </div>
+        <nop-panels id="blog-post-panels">
+            <nop-panel asp-name="blog-post-info" asp-icon="fa fa-info" asp-title="@T("Admin.ContentManagement.Blog.BlogPosts.Info")" asp-hide-block-attribute-name="@hideInfoBlockAttributeName" asp-hide="@hideInfoBlock" asp-advanced="false">@await Html.PartialAsync("_CreateOrUpdate.Info", Model)</nop-panel>
+            <nop-panel asp-name="blog-post-seo" asp-icon="fa fa-search-plus" asp-title="@T("Admin.Common.SEO")" asp-hide-block-attribute-name="@hideSeoBlockAttributeName" asp-hide="@hideSeoBlock" asp-advanced="true">@await Html.PartialAsync("_CreateOrUpdate.SEO", Model)</nop-panel>
+            
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.BlogPostDetailsBlock, additionalData = Model })
+        </nop-panels>
     </div>
 </div>
-
-@{
-    //custom tabs
-    var eventMessage = new AdminTabStripCreated(this.Html, "blog-post-edit");
-    eventPublisher.Publish(eventMessage);
-    foreach (var eventBlock in eventMessage.BlocksToRender)
-    {
-        @eventBlock
-    }
-}
-
-@*save selected tab name*@
-<input type="hidden" id="selected-tab-name" name="selected-tab-name" value="@(Html.GetSelectedTabName())">

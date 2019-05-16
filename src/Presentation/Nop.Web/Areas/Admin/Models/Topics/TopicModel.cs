@@ -1,16 +1,17 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Nop.Web.Framework;
-using Nop.Web.Framework.Localization;
-using Nop.Web.Framework.Mvc;
+using Nop.Web.Framework.Models;
 using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
 
-namespace Nop.Admin.Models.Topics
+namespace Nop.Web.Areas.Admin.Models.Topics
 {
-    public partial class TopicModel : BaseNopEntityModel, ILocalizedModel<TopicLocalizedModel>
+    /// <summary>
+    /// Represents a topic model
+    /// </summary>
+    public partial class TopicModel : BaseNopEntityModel, IAclSupportedModel, ILocalizedModel<TopicLocalizedModel>, IStoreMappingSupportedModel
     {
+        #region Ctor
+
         public TopicModel()
         {
             AvailableTopicTemplates = new List<SelectListItem>();
@@ -23,6 +24,10 @@ namespace Nop.Admin.Models.Topics
             AvailableStores = new List<SelectListItem>();
         }
 
+        #endregion
+
+        #region Properties
+
         [NopResourceDisplayName("Admin.ContentManagement.Topics.Fields.SystemName")]
         public string SystemName { get; set; }
 
@@ -34,10 +39,13 @@ namespace Nop.Admin.Models.Topics
 
         [NopResourceDisplayName("Admin.ContentManagement.Topics.Fields.IncludeInFooterColumn1")]
         public bool IncludeInFooterColumn1 { get; set; }
+
         [NopResourceDisplayName("Admin.ContentManagement.Topics.Fields.IncludeInFooterColumn2")]
         public bool IncludeInFooterColumn2 { get; set; }
+
         [NopResourceDisplayName("Admin.ContentManagement.Topics.Fields.IncludeInFooterColumn3")]
         public bool IncludeInFooterColumn3 { get; set; }
+
         [NopResourceDisplayName("Admin.ContentManagement.Topics.Fields.DisplayOrder")]
         public int DisplayOrder { get; set; }
 
@@ -64,6 +72,7 @@ namespace Nop.Admin.Models.Topics
 
         [NopResourceDisplayName("Admin.ContentManagement.Topics.Fields.TopicTemplate")]
         public int TopicTemplateId { get; set; }
+
         public IList<SelectListItem> AvailableTopicTemplates { get; set; }
 
         [NopResourceDisplayName("Admin.ContentManagement.Topics.Fields.MetaKeywords")]
@@ -82,19 +91,20 @@ namespace Nop.Admin.Models.Topics
 
         //store mapping
         [NopResourceDisplayName("Admin.ContentManagement.Topics.Fields.LimitedToStores")]
-        [UIHint("MultiSelect")]
         public IList<int> SelectedStoreIds { get; set; }
+
         public IList<SelectListItem> AvailableStores { get; set; }
 
         //ACL (customer roles)
         [NopResourceDisplayName("Admin.ContentManagement.Topics.Fields.AclCustomerRoles")]
-        [UIHint("MultiSelect")]
         public IList<int> SelectedCustomerRoleIds { get; set; }
+
         public IList<SelectListItem> AvailableCustomerRoles { get; set; }
 
+        #endregion
     }
 
-    public partial class TopicLocalizedModel : ILocalizedModelLocal
+    public partial class TopicLocalizedModel : ILocalizedLocaleModel
     {
         public int LanguageId { get; set; }
 

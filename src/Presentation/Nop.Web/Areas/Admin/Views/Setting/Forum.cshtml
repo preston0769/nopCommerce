@@ -1,4 +1,4 @@
-﻿@model ForumSettingsModel
+@model ForumSettingsModel
 
 @{
     //page title
@@ -7,9 +7,21 @@
     Html.SetActiveMenuItemSystemName("Forums settings");
 }
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
+@{
+    const string hideCommonBlockAttributeName = "ForumSettingsPage.HideCommonBlock";
+    var hideCommonBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideCommonBlockAttributeName);
+
+    const string hidePermissionsBlockAttributeName = "ForumSettingsPage.HidePermissionsBlock";
+    var hidePermissionsBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hidePermissionsBlockAttributeName);
+
+    const string hidePageSizesBlockAttributeName = "ForumSettingsPage.HidePageSizesBlock";
+    var hidePageSizesBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hidePageSizesBlockAttributeName);
+
+    const string hideFeedsBlockAttributeName = "ForumSettingsPage.HideFeedsBlock";
+    var hideFeedsBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideFeedsBlockAttributeName);
+}
+
+<form asp-controller="Setting" asp-action="Forum" method="post">
     <div class="content-header clearfix">
         <h1 class="pull-left">
             @T("Admin.Configuration.Settings.Forums")
@@ -19,6 +31,7 @@
                 <i class="fa fa-floppy-o"></i>
                 @T("Admin.Common.Save")
             </button>
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.ForumSettingsButtons })
         </div>
     </div>
 
@@ -26,18 +39,27 @@
         <div class="form-horizontal">
             @await Component.InvokeAsync("StoreScopeConfiguration")
             @await Component.InvokeAsync("SettingMode")
-            @Html.ValidationSummary(false)
+            <div asp-validation-summary="All"></div>
 
-            <script type="text/javascript">
+            <nop-panels id="forumsettings-panels">
+                <nop-panel asp-name="forumsettings-common" asp-icon="fa fa-info" asp-title="@T("Admin.Configuration.Settings.Forums.BlockTitle.Common")" asp-hide-block-attribute-name="@hideCommonBlockAttributeName" asp-hide="@hideCommonBlock" asp-advanced="false">@await Html.PartialAsync("_Forum.Common", Model)</nop-panel>
+                <nop-panel asp-name="forumsettings-permissions" asp-icon="fa fa-shield" asp-title="@T("Admin.Configuration.Settings.Forums.BlockTitle.Permissions")" asp-hide-block-attribute-name="@hidePermissionsBlockAttributeName" asp-hide="@hidePermissionsBlock" asp-advanced="false">@await Html.PartialAsync("_Forum.Permissions", Model)</nop-panel>
+                <nop-panel asp-name="forumsettings-page-sizes" asp-icon="fa fa-file-o" asp-title="@T("Admin.Configuration.Settings.Forums.BlockTitle.PageSizes")" asp-hide-block-attribute-name="@hidePageSizesBlockAttributeName" asp-hide="@hidePageSizesBlock" asp-advanced="true">@await Html.PartialAsync("_Forum.PageSizes", Model)</nop-panel>
+                <nop-panel asp-name="forumsettings-feeds" asp-icon="fa fa-rss" asp-title="@T("Admin.Configuration.Settings.Forums.BlockTitle.Feeds")" asp-hide-block-attribute-name="@hideFeedsBlockAttributeName" asp-hide="@hideFeedsBlock" asp-advanced="true">@await Html.PartialAsync("_Forum.Feeds", Model)</nop-panel>
+
+                @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.ForumSettingsDetailsBlock, additionalData = Model })
+            </nop-panels>
+
+            <script>
                 $(document).ready(function () {
-                    $("#@Html.FieldIdFor(model => model.AllowPostVoting)").click(toggleAllowVoting);
-                    $("#@Html.FieldIdFor(model => model.AllowPrivateMessages)").click(toggleAllowPrivateMessages);
+                    $("#@Html.IdFor(model => model.AllowPostVoting)").click(toggleAllowVoting);
+                    $("#@Html.IdFor(model => model.AllowPrivateMessages)").click(toggleAllowPrivateMessages);
                     toggleAllowVoting();
                     toggleAllowPrivateMessages();
                 });
 
                 function toggleAllowVoting() {
-                    if ($('#@Html.FieldIdFor(model => model.AllowPostVoting)').is(':checked')) {
+                    if ($('#@Html.IdFor(model => model.AllowPostVoting)').is(':checked')) {
                         $('#pnlMaxVotes').show();
                     }
                     else {
@@ -46,7 +68,7 @@
                 }
 
                 function toggleAllowPrivateMessages() {
-                    if ($('#@Html.FieldIdFor(model => model.AllowPrivateMessages)').is(':checked')) {
+                    if ($('#@Html.IdFor(model => model.AllowPrivateMessages)').is(':checked')) {
                         $('#pnlShowAlertForPM').show();
                         $('#pnlNotifyAboutPrivateMessages').show();
                     }
@@ -56,267 +78,6 @@
                     }
                 }
             </script>
-
-            <div class="panel-group">
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        @T("Admin.Configuration.Settings.Forums.BlockTitle.Common")
-                    </div>
-                    <div class="panel-body">
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.ForumsEnabled_OverrideForStore, model => model.ForumsEnabled, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.ForumsEnabled)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.ForumsEnabled)
-                                @Html.ValidationMessageFor(model => model.ForumsEnabled)
-                            </div>
-                        </div>
-                        <div class="form-group advanced-setting">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.RelativeDateTimeFormattingEnabled_OverrideForStore, model => model.RelativeDateTimeFormattingEnabled, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.RelativeDateTimeFormattingEnabled)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.RelativeDateTimeFormattingEnabled)
-                                @Html.ValidationMessageFor(model => model.RelativeDateTimeFormattingEnabled)
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.SignaturesEnabled_OverrideForStore, model => model.SignaturesEnabled, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.SignaturesEnabled)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.SignaturesEnabled)
-                                @Html.ValidationMessageFor(model => model.SignaturesEnabled)
-                            </div>
-                        </div>
-                        <div class="form-group advanced-setting">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.ShowCustomersPostCount_OverrideForStore, model => model.ShowCustomersPostCount, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.ShowCustomersPostCount)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.ShowCustomersPostCount)
-                                @Html.ValidationMessageFor(model => model.ShowCustomersPostCount)
-                            </div>
-                        </div>
-                        <div class="form-group advanced-setting">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.ForumEditor_OverrideForStore, model => model.ForumEditor, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.ForumEditor)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopDropDownListFor(model => model.ForumEditor, Model.ForumEditorValues)
-                                @Html.ValidationMessageFor(model => model.ForumEditor)
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="panel panel-default">
-                    <div class="panel-heading">
-                        @T("Admin.Configuration.Settings.Forums.BlockTitle.Permissions")
-                    </div>
-                    <div class="panel-body">
-                        <div class="form-group advanced-setting">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.AllowGuestsToCreatePosts_OverrideForStore, model => model.AllowGuestsToCreatePosts, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.AllowGuestsToCreatePosts)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.AllowGuestsToCreatePosts)
-                                @Html.ValidationMessageFor(model => model.AllowGuestsToCreatePosts)
-                            </div>
-                        </div>
-                        <div class="form-group advanced-setting">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.AllowGuestsToCreateTopics_OverrideForStore, model => model.AllowGuestsToCreateTopics, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.AllowGuestsToCreateTopics)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.AllowGuestsToCreateTopics)
-                                @Html.ValidationMessageFor(model => model.AllowGuestsToCreateTopics)
-                            </div>
-                        </div>
-                        <div class="form-group advanced-setting">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.AllowCustomersToEditPosts_OverrideForStore, model => model.AllowCustomersToEditPosts, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.AllowCustomersToEditPosts)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.AllowCustomersToEditPosts)
-                                @Html.ValidationMessageFor(model => model.AllowCustomersToEditPosts)
-                            </div>
-                        </div>
-                        <div class="form-group advanced-setting">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.AllowCustomersToDeletePosts_OverrideForStore, model => model.AllowCustomersToDeletePosts, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.AllowCustomersToDeletePosts)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.AllowCustomersToDeletePosts)
-                                @Html.ValidationMessageFor(model => model.AllowCustomersToDeletePosts)
-                            </div>
-                        </div>
-                        <div class="form-group advanced-setting">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.AllowCustomersToManageSubscriptions_OverrideForStore, model => model.AllowCustomersToManageSubscriptions, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.AllowCustomersToManageSubscriptions)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.AllowCustomersToManageSubscriptions)
-                                @Html.ValidationMessageFor(model => model.AllowCustomersToManageSubscriptions)
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.AllowPostVoting_OverrideForStore, model => model.AllowPostVoting, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.AllowPostVoting)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.AllowPostVoting)
-                                @Html.ValidationMessageFor(model => model.AllowPostVoting)
-                            </div>
-                        </div>
-                        <div class="form-group advanced-setting" id="pnlMaxVotes">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.MaxVotesPerDay_OverrideForStore, model => model.MaxVotesPerDay, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.MaxVotesPerDay)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.MaxVotesPerDay)
-                                @Html.ValidationMessageFor(model => model.MaxVotesPerDay)
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.AllowPrivateMessages_OverrideForStore, model => model.AllowPrivateMessages, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.AllowPrivateMessages)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.AllowPrivateMessages)
-                                @Html.ValidationMessageFor(model => model.AllowPrivateMessages)
-                            </div>
-                        </div>
-                        <div class="form-group advanced-setting" id="pnlShowAlertForPM">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.ShowAlertForPM_OverrideForStore, model => model.ShowAlertForPM, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.ShowAlertForPM)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.ShowAlertForPM)
-                                @Html.ValidationMessageFor(model => model.ShowAlertForPM)
-                            </div>
-                        </div>
-                        <div class="form-group advanced-setting" id="pnlNotifyAboutPrivateMessages">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.NotifyAboutPrivateMessages_OverrideForStore, model => model.NotifyAboutPrivateMessages, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.NotifyAboutPrivateMessages)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.NotifyAboutPrivateMessages)
-                                @Html.ValidationMessageFor(model => model.NotifyAboutPrivateMessages)
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="panel panel-default advanced-setting">
-                    <div class="panel-heading">
-                        @T("Admin.Configuration.Settings.Forums.BlockTitle.PageSizes")
-                    </div>
-                    <div class="panel-body">
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.TopicsPageSize_OverrideForStore, model => model.TopicsPageSize, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.TopicsPageSize)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.TopicsPageSize)
-                                @Html.ValidationMessageFor(model => model.TopicsPageSize)
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.PostsPageSize_OverrideForStore, model => model.PostsPageSize, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.PostsPageSize)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.PostsPageSize)
-                                @Html.ValidationMessageFor(model => model.PostsPageSize)
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.SearchResultsPageSize_OverrideForStore, model => model.SearchResultsPageSize, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.SearchResultsPageSize)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.SearchResultsPageSize)
-                                @Html.ValidationMessageFor(model => model.SearchResultsPageSize)
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.ActiveDiscussionsPageSize_OverrideForStore, model => model.ActiveDiscussionsPageSize, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.ActiveDiscussionsPageSize)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.ActiveDiscussionsPageSize)
-                                @Html.ValidationMessageFor(model => model.ActiveDiscussionsPageSize)
-                            </div>
-                        </div>
-                    </div>
-                </div>
-                <div class="panel panel-default advanced-setting">
-                    <div class="panel-heading">
-                        @T("Admin.Configuration.Settings.Forums.BlockTitle.Feeds")
-                    </div>
-                    <div class="panel-body">
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.ForumFeedsEnabled_OverrideForStore, model => model.ForumFeedsEnabled, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.ForumFeedsEnabled)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.ForumFeedsEnabled)
-                                @Html.ValidationMessageFor(model => model.ForumFeedsEnabled)
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.ForumFeedCount_OverrideForStore, model => model.ForumFeedCount, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.ForumFeedCount)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.ForumFeedCount)
-                                @Html.ValidationMessageFor(model => model.ForumFeedCount)
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.ActiveDiscussionsFeedEnabled_OverrideForStore, model => model.ActiveDiscussionsFeedEnabled, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.ActiveDiscussionsFeedEnabled)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.ActiveDiscussionsFeedEnabled)
-                                @Html.ValidationMessageFor(model => model.ActiveDiscussionsFeedEnabled)
-                            </div>
-                        </div>
-                        <div class="form-group">
-                            <div class="col-md-3">
-                                @Html.OverrideStoreCheckboxFor(model => model.ActiveDiscussionsFeedCount_OverrideForStore, model => model.ActiveDiscussionsFeedCount, Model.ActiveStoreScopeConfiguration)
-                                @Html.NopLabelFor(model => model.ActiveDiscussionsFeedCount)
-                            </div>
-                            <div class="col-md-9">
-                                @Html.NopEditorFor(model => model.ActiveDiscussionsFeedCount)
-                                @Html.ValidationMessageFor(model => model.ActiveDiscussionsFeedCount)
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
         </div>
     </div>
-}
+</form>

@@ -1,34 +1,34 @@
 ﻿using System.Linq;
 using Microsoft.AspNetCore.Mvc;
-using Nop.Web.Factories;
-using System.Threading.Tasks;
 using Nop.Core;
 using Nop.Core.Domain.Orders;
 using Nop.Services.Orders;
+using Nop.Web.Factories;
+using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class OrderTotalsViewComponent : ViewComponent
+    public class OrderTotalsViewComponent : NopViewComponent
     {
         private readonly IShoppingCartModelFactory _shoppingCartModelFactory;
+        private readonly IShoppingCartService _shoppingCartService;
         private readonly IStoreContext _storeContext;
         private readonly IWorkContext _workContext;
 
         public OrderTotalsViewComponent(IShoppingCartModelFactory shoppingCartModelFactory,
+            IShoppingCartService shoppingCartService,
             IStoreContext storeContext,
             IWorkContext workContext)
         {
-            this._shoppingCartModelFactory = shoppingCartModelFactory;
-            this._storeContext = storeContext;
-            this._workContext = workContext;
+            _shoppingCartModelFactory = shoppingCartModelFactory;
+            _shoppingCartService = shoppingCartService;
+            _storeContext = storeContext;
+            _workContext = workContext;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync(bool isEditable)
+        public IViewComponentResult Invoke(bool isEditable)
         {
-            var cart = _workContext.CurrentCustomer.ShoppingCartItems
-                .Where(sci => sci.ShoppingCartType == ShoppingCartType.ShoppingCart)
-                .LimitPerStore(_storeContext.CurrentStore.Id)
-                .ToList();
+            var cart = _shoppingCartService.GetShoppingCart(_workContext.CurrentCustomer, ShoppingCartType.ShoppingCart, _storeContext.CurrentStore.Id);
 
             var model = _shoppingCartModelFactory.PrepareOrderTotalsModel(cart, isEditable);
             return View(model);

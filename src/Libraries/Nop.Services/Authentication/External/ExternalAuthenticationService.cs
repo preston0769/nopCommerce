@@ -1,13 +1,11 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Nop.Core;
 using Nop.Core.Data;
 using Nop.Core.Domain.Customers;
 using Nop.Core.Domain.Localization;
-using Nop.Core.Plugins;
 using Nop.Services.Common;
 using Nop.Services.Customers;
 using Nop.Services.Events;
@@ -27,15 +25,14 @@ namespace Nop.Services.Authentication.External
 
         private readonly CustomerSettings _customerSettings;
         private readonly ExternalAuthenticationSettings _externalAuthenticationSettings;
+        private readonly IAuthenticationPluginManager _authenticationPluginManager;
         private readonly IAuthenticationService _authenticationService;
         private readonly ICustomerActivityService _customerActivityService;
         private readonly ICustomerRegistrationService _customerRegistrationService;
         private readonly ICustomerService _customerService;
         private readonly IEventPublisher _eventPublisher;
         private readonly IGenericAttributeService _genericAttributeService;
-        private readonly IHttpContextAccessor _httpContextAccessor;
         private readonly ILocalizationService _localizationService;
-        private readonly IPluginFinder _pluginFinder;
         private readonly IRepository<ExternalAuthenticationRecord> _externalAuthenticationRecordRepository;
         private readonly IShoppingCartService _shoppingCartService;
         private readonly IStoreContext _storeContext;
@@ -49,15 +46,14 @@ namespace Nop.Services.Authentication.External
 
         public ExternalAuthenticationService(CustomerSettings customerSettings,
             ExternalAuthenticationSettings externalAuthenticationSettings,
+            IAuthenticationPluginManager authenticationPluginManager,
             IAuthenticationService authenticationService,
             ICustomerActivityService customerActivityService,
             ICustomerRegistrationService customerRegistrationService,
             ICustomerService customerService,
             IEventPublisher eventPublisher,
             IGenericAttributeService genericAttributeService,
-            IHttpContextAccessor httpContextAccessor,
             ILocalizationService localizationService,
-            IPluginFinder pluginFinder,
             IRepository<ExternalAuthenticationRecord> externalAuthenticationRecordRepository,
             IShoppingCartService shoppingCartService,
             IStoreContext storeContext,
@@ -65,23 +61,22 @@ namespace Nop.Services.Authentication.External
             IWorkflowMessageService workflowMessageService,
             LocalizationSettings localizationSettings)
         {
-            this._customerSettings = customerSettings;
-            this._externalAuthenticationSettings = externalAuthenticationSettings;
-            this._authenticationService = authenticationService;
-            this._customerActivityService = customerActivityService;
-            this._customerRegistrationService = customerRegistrationService;
-            this._customerService = customerService;
-            this._eventPublisher = eventPublisher;
-            this._genericAttributeService = genericAttributeService;
-            this._httpContextAccessor = httpContextAccessor;
-            this._localizationService = localizationService;
-            this._pluginFinder = pluginFinder;
-            this._externalAuthenticationRecordRepository = externalAuthenticationRecordRepository;
-            this._shoppingCartService = shoppingCartService;
-            this._storeContext = storeContext;
-            this._workContext = workContext;
-            this._workflowMessageService = workflowMessageService;
-            this._localizationSettings = localizationSettings;
+            _customerSettings = customerSettings;
+            _externalAuthenticationSettings = externalAuthenticationSettings;
+            _authenticationPluginManager = authenticationPluginManager;
+            _authenticationService = authenticationService;
+            _customerActivityService = customerActivityService;
+            _customerRegistrationService = customerRegistrationService;
+            _customerService = customerService;
+            _eventPublisher = eventPublisher;
+            _genericAttributeService = genericAttributeService;
+            _localizationService = localizationService;
+            _externalAuthenticationRecordRepository = externalAuthenticationRecordRepository;
+            _shoppingCartService = shoppingCartService;
+            _storeContext = storeContext;
+            _workContext = workContext;
+            _workflowMessageService = workflowMessageService;
+            _localizationSettings = localizationSettings;
         }
 
         #endregion
@@ -104,10 +99,10 @@ namespace Nop.Services.Authentication.External
             //account is already assigned to another user
             if (currentLoggedInUser.Id != associatedUser.Id)
                 //TODO create locale for error
-                return Error(new[] { "Account is already assigned" }, returnUrl);
+                return ErrorAuthentication(new[] { "Account is already assigned" }, returnUrl);
 
-            //or the user try to log in as himself.. bit weird
-            return new RedirectResult(!string.IsNullOrEmpty(returnUrl) ? returnUrl : "/");
+            //or the user try to log in as himself. bit weird
+            return SuccessfulAuthentication(returnUrl);
         }
 
         /// <summary>
@@ -123,7 +118,7 @@ namespace Nop.Services.Authentication.External
             if (currentLoggedInUser != null)
             {
                 AssociateExternalAccountWithUser(currentLoggedInUser, parameters);
-                return new RedirectResult(!string.IsNullOrEmpty(returnUrl) ? returnUrl : "/");
+                return SuccessfulAuthentication(returnUrl);
             }
 
             //or try to register new user
@@ -131,8 +126,7 @@ namespace Nop.Services.Authentication.External
                 return RegisterNewUser(parameters, returnUrl);
 
             //registration is disabled
-            //TODO create locale for error
-            return Error(new[] { "Registration is disabled" }, returnUrl);
+            return ErrorAuthentication(new[] { "Registration is disabled" }, returnUrl);
         }
 
         /// <summary>
@@ -143,15 +137,14 @@ namespace Nop.Services.Authentication.External
         /// <returns>Result of an authentication</returns>
         protected virtual IActionResult RegisterNewUser(ExternalAuthenticationParameters parameters, string returnUrl)
         {
-            //if auto registration is disabled redirect to login page
-            //TODO remove this setting
-            if (!_externalAuthenticationSettings.AutoRegisterEnabled)
+            //check whether the specified email has been already registered
+            if (_customerService.GetCustomerByEmail(parameters.Email) != null)
             {
-                ExternalAuthorizerHelper.StoreParametersForRoundTrip(parameters);
-                return new RedirectToActionResult("Login", "Customer", !string.IsNullOrEmpty(returnUrl) ? new { ReturnUrl = returnUrl } : null);
+                var alreadyExistsError = string.Format(_localizationService.GetResource("Account.AssociatedExternalAuth.EmailAlreadyExists"),
+                    !string.IsNullOrEmpty(parameters.ExternalDisplayIdentifier) ? parameters.ExternalDisplayIdentifier : parameters.ExternalIdentifier);
+                return ErrorAuthentication(new[] { alreadyExistsError }, returnUrl);
             }
 
-            //or try to auto register new user
             //registration is approved if validation isn't required
             var registrationIsApproved = _customerSettings.UserRegistrationType == UserRegistrationType.Standard ||
                 (_customerSettings.UserRegistrationType == UserRegistrationType.EmailValidation && !_externalAuthenticationSettings.RequireEmailValidation);
@@ -160,19 +153,19 @@ namespace Nop.Services.Authentication.External
             var registrationRequest = new CustomerRegistrationRequest(_workContext.CurrentCustomer,
                 parameters.Email, parameters.Email,
                 CommonHelper.GenerateRandomDigitCode(20),
-                PasswordFormat.Clear,
+                PasswordFormat.Hashed,
                 _storeContext.CurrentStore.Id,
                 registrationIsApproved);
 
             //whether registration request has been completed successfully
             var registrationResult = _customerRegistrationService.RegisterCustomer(registrationRequest);
             if (!registrationResult.Success)
-                return Error(registrationResult.Errors, returnUrl);
+                return ErrorAuthentication(registrationResult.Errors, returnUrl);
 
             //allow to save other customer values by consuming this event
             _eventPublisher.Publish(new CustomerAutoRegisteredByExternalMethodEvent(_workContext.CurrentCustomer, parameters));
 
-            //raise vustomer registered event
+            //raise customer registered event
             _eventPublisher.Publish(new CustomerRegisteredEvent(_workContext.CurrentCustomer));
 
             //store owner notifications
@@ -188,14 +181,14 @@ namespace Nop.Services.Authentication.External
                 _authenticationService.SignIn(_workContext.CurrentCustomer, false);
                 _workflowMessageService.SendCustomerWelcomeMessage(_workContext.CurrentCustomer, _workContext.WorkingLanguage.Id);
 
-                return new RedirectToRouteResult("RegisterResult", new { resultId = (int)UserRegistrationType.Standard });
+                return new RedirectToRouteResult("RegisterResult", new { resultId = (int)UserRegistrationType.Standard, returnUrl });
             }
 
             //registration is succeeded but isn't activated
             if (_customerSettings.UserRegistrationType == UserRegistrationType.EmailValidation)
             {
                 //email validation message
-                _genericAttributeService.SaveAttribute(_workContext.CurrentCustomer, SystemCustomerAttributeNames.AccountActivationToken, Guid.NewGuid().ToString());
+                _genericAttributeService.SaveAttribute(_workContext.CurrentCustomer, NopCustomerDefaults.AccountActivationTokenAttribute, Guid.NewGuid().ToString());
                 _workflowMessageService.SendCustomerEmailValidationMessage(_workContext.CurrentCustomer, _workContext.WorkingLanguage.Id);
 
                 return new RedirectToRouteResult("RegisterResult", new { resultId = (int)UserRegistrationType.EmailValidation });
@@ -205,8 +198,7 @@ namespace Nop.Services.Authentication.External
             if (_customerSettings.UserRegistrationType == UserRegistrationType.AdminApproval)
                 return new RedirectToRouteResult("RegisterResult", new { resultId = (int)UserRegistrationType.AdminApproval });
 
-            //TODO create locale for error
-            return Error(new[] { "Error on registration" }, returnUrl);
+            return ErrorAuthentication(new[] { "Error on registration" }, returnUrl);
         }
 
         /// <summary>
@@ -227,9 +219,10 @@ namespace Nop.Services.Authentication.External
             _eventPublisher.Publish(new CustomerLoggedinEvent(user));
 
             //activity log
-            _customerActivityService.InsertActivity("PublicStore.Login", _localizationService.GetResource("ActivityLog.PublicStore.Login"), user);
+            _customerActivityService.InsertActivity(user, "PublicStore.Login",
+                _localizationService.GetResource("ActivityLog.PublicStore.Login"), user);
 
-            return new RedirectResult(!string.IsNullOrEmpty(returnUrl) ? returnUrl : "/");
+            return SuccessfulAuthentication(returnUrl);
         }
 
         /// <summary>
@@ -238,7 +231,7 @@ namespace Nop.Services.Authentication.External
         /// <param name="errors">Collection of errors</param>
         /// <param name="returnUrl">URL to which the user will return after authentication</param>
         /// <returns>Result of an authentication</returns>
-        protected virtual IActionResult Error(IEnumerable<string> errors, string returnUrl)
+        protected virtual IActionResult ErrorAuthentication(IEnumerable<string> errors, string returnUrl)
         {
             foreach (var error in errors)
                 ExternalAuthorizerHelper.AddErrorsToDisplay(error);
@@ -246,68 +239,23 @@ namespace Nop.Services.Authentication.External
             return new RedirectToActionResult("Login", "Customer", !string.IsNullOrEmpty(returnUrl) ? new { ReturnUrl = returnUrl } : null);
         }
 
+        /// <summary>
+        /// Redirect the user after successful authentication
+        /// </summary>
+        /// <param name="returnUrl">URL to which the user will return after authentication</param>
+        /// <returns>Result of an authentication</returns>
+        protected virtual IActionResult SuccessfulAuthentication(string returnUrl)
+        {
+            //redirect to the return URL if it's specified
+            if (!string.IsNullOrEmpty(returnUrl))
+                return new RedirectResult(returnUrl);
+
+            return new RedirectToRouteResult("Homepage", null);
+        }
+
         #endregion
 
         #region Methods
-
-        #region External authentication methods
-
-        /// <summary>
-        /// Load active external authentication methods
-        /// </summary>
-        /// <param name="customer">Load records allowed only to a specified customer; pass null to ignore ACL permissions</param>
-        /// <param name="storeId">Load records allowed only in a specified store; pass 0 to load all records</param>
-        /// <returns>Payment methods</returns>
-        public virtual IList<IExternalAuthenticationMethod> LoadActiveExternalAuthenticationMethods(Customer customer = null, int storeId = 0)
-        {
-            return LoadAllExternalAuthenticationMethods(customer, storeId)
-                .Where(provider => _externalAuthenticationSettings.ActiveAuthenticationMethodSystemNames
-                    .Contains(provider.PluginDescriptor.SystemName, StringComparer.InvariantCultureIgnoreCase)).ToList();
-        }
-
-        /// <summary>
-        /// Load external authentication method by system name
-        /// </summary>
-        /// <param name="systemName">System name</param>
-        /// <returns>Found external authentication method</returns>
-        public virtual IExternalAuthenticationMethod LoadExternalAuthenticationMethodBySystemName(string systemName)
-        {
-            var descriptor = _pluginFinder.GetPluginDescriptorBySystemName<IExternalAuthenticationMethod>(systemName);
-            if (descriptor != null)
-                return descriptor.Instance<IExternalAuthenticationMethod>();
-
-            return null;
-        }
-
-        /// <summary>
-        /// Load all external authentication methods
-        /// </summary>
-        /// <param name="customer">Load records allowed only to a specified customer; pass null to ignore ACL permissions</param>
-        /// <param name="storeId">Load records allowed only in a specified store; pass 0 to load all records</param>
-        /// <returns>External authentication methods</returns>
-        public virtual IList<IExternalAuthenticationMethod> LoadAllExternalAuthenticationMethods(Customer customer = null, int storeId = 0)
-        {
-            return _pluginFinder.GetPlugins<IExternalAuthenticationMethod>(customer: customer, storeId: storeId).ToList();
-        }
-
-        /// <summary>
-        /// Check whether authentication by the passed external authentication method is available
-        /// </summary>
-        /// <param name="systemName">System name of the external authentication method</param>
-        /// <returns>True if authentication is available; otherwise false</returns>
-        public virtual bool ExternalAuthenticationMethodIsAvailable(string systemName)
-        {
-            //load method
-            var authenticationMethod = LoadExternalAuthenticationMethodBySystemName(systemName);
-
-            return authenticationMethod != null &&
-                authenticationMethod.IsMethodActive(_externalAuthenticationSettings) &&
-                authenticationMethod.PluginDescriptor.Installed &&
-                _pluginFinder.AuthenticateStore(authenticationMethod.PluginDescriptor, _storeContext.CurrentStore.Id) &&
-                _pluginFinder.AuthorizedForUser(authenticationMethod.PluginDescriptor, _workContext.CurrentCustomer);
-        }
-
-        #endregion
 
         #region Authentication
 
@@ -320,11 +268,10 @@ namespace Nop.Services.Authentication.External
         public virtual IActionResult Authenticate(ExternalAuthenticationParameters parameters, string returnUrl = null)
         {
             if (parameters == null)
-                throw new ArgumentNullException("parameters");
+                throw new ArgumentNullException(nameof(parameters));
 
-            if (!ExternalAuthenticationMethodIsAvailable(parameters.ProviderSystemName))
-                //TODO create locale for error
-                return Error(new[] { "External authentication method cannot be loaded" }, returnUrl);
+            if (!_authenticationPluginManager.IsPluginActive(parameters.ProviderSystemName))
+                return ErrorAuthentication(new[] { "External authentication method cannot be loaded" }, returnUrl);
 
             //get current logged-in user
             var currentLoggedInUser = _workContext.CurrentCustomer.IsRegistered() ? _workContext.CurrentCustomer : null;
@@ -341,14 +288,14 @@ namespace Nop.Services.Authentication.External
         #endregion
 
         /// <summary>
-        /// Accociate external account with customer
+        /// Associate external account with customer
         /// </summary>
         /// <param name="customer">Customer</param>
         /// <param name="parameters">External authentication parameters</param>
         public virtual void AssociateExternalAccountWithUser(Customer customer, ExternalAuthenticationParameters parameters)
         {
             if (customer == null)
-                throw new ArgumentNullException("customer");
+                throw new ArgumentNullException(nameof(customer));
 
             var externalAuthenticationRecord = new ExternalAuthenticationRecord
             {
@@ -357,7 +304,7 @@ namespace Nop.Services.Authentication.External
                 ExternalIdentifier = parameters.ExternalIdentifier,
                 ExternalDisplayIdentifier = parameters.ExternalDisplayIdentifier,
                 OAuthAccessToken = parameters.AccessToken,
-                ProviderSystemName = parameters.ProviderSystemName,
+                ProviderSystemName = parameters.ProviderSystemName
             };
 
             _externalAuthenticationRecordRepository.Insert(externalAuthenticationRecord);
@@ -371,7 +318,7 @@ namespace Nop.Services.Authentication.External
         public virtual Customer GetUserByExternalAuthenticationParameters(ExternalAuthenticationParameters parameters)
         {
             if (parameters == null)
-                throw new ArgumentNullException("parameters");
+                throw new ArgumentNullException(nameof(parameters));
 
             var associationRecord = _externalAuthenticationRecordRepository.Table.FirstOrDefault(record =>
                 record.ExternalIdentifier.Equals(parameters.ExternalIdentifier) && record.ProviderSystemName.Equals(parameters.ProviderSystemName));
@@ -388,7 +335,7 @@ namespace Nop.Services.Authentication.External
         public virtual void RemoveAssociation(ExternalAuthenticationParameters parameters)
         {
             if (parameters == null)
-                throw new ArgumentNullException("parameters");
+                throw new ArgumentNullException(nameof(parameters));
 
             var associationRecord = _externalAuthenticationRecordRepository.Table.FirstOrDefault(record =>
                 record.ExternalIdentifier.Equals(parameters.ExternalIdentifier) && record.ProviderSystemName.Equals(parameters.ProviderSystemName));
@@ -404,7 +351,7 @@ namespace Nop.Services.Authentication.External
         public virtual void DeleteExternalAuthenticationRecord(ExternalAuthenticationRecord externalAuthenticationRecord)
         {
             if (externalAuthenticationRecord == null)
-                throw new ArgumentNullException("externalAuthenticationRecord");
+                throw new ArgumentNullException(nameof(externalAuthenticationRecord));
 
             _externalAuthenticationRecordRepository.Delete(externalAuthenticationRecord);
         }

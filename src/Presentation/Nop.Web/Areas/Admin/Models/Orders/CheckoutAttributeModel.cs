@@ -1,28 +1,33 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using FluentValidation.Attributes;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Nop.Admin.Validators.Orders;
 using Nop.Core.Domain.Catalog;
-using Nop.Web.Framework;
-using Nop.Web.Framework.Localization;
-using Nop.Web.Framework.Mvc;
+using Nop.Web.Framework.Models;
 using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
 
-namespace Nop.Admin.Models.Orders
+namespace Nop.Web.Areas.Admin.Models.Orders
 {
-    [Validator(typeof(CheckoutAttributeValidator))]
-    public partial class CheckoutAttributeModel : BaseNopEntityModel, ILocalizedModel<CheckoutAttributeLocalizedModel>
+    /// <summary>
+    /// Represents a checkout attribute model
+    /// </summary>
+    public partial class CheckoutAttributeModel : BaseNopEntityModel, 
+        ILocalizedModel<CheckoutAttributeLocalizedModel>, IStoreMappingSupportedModel
     {
+        #region Ctor
+
         public CheckoutAttributeModel()
         {
             Locales = new List<CheckoutAttributeLocalizedModel>();
             AvailableTaxCategories = new List<SelectListItem>();
-
+            ConditionModel = new ConditionModel();
             SelectedStoreIds = new List<int>();
             AvailableStores = new List<SelectListItem>();
+            CheckoutAttributeValueSearchModel = new CheckoutAttributeValueSearchModel();
         }
+
+        #endregion
+
+        #region Properties
 
         [NopResourceDisplayName("Admin.Catalog.Attributes.CheckoutAttributes.Fields.Name")]
         public string Name { get; set; }
@@ -51,7 +56,6 @@ namespace Nop.Admin.Models.Orders
         [NopResourceDisplayName("Admin.Catalog.Attributes.CheckoutAttributes.Fields.DisplayOrder")]
         public int DisplayOrder { get; set; }
 
-
         [NopResourceDisplayName("Admin.Catalog.Attributes.CheckoutAttributes.Fields.MinLength")]
         [UIHint("Int32Nullable")]
         public int? ValidationMinLength { get; set; }
@@ -78,14 +82,21 @@ namespace Nop.Admin.Models.Orders
 
         //store mapping
         [NopResourceDisplayName("Admin.Catalog.Attributes.CheckoutAttributes.Fields.LimitedToStores")]
-        [UIHint("MultiSelect")]
         public IList<int> SelectedStoreIds { get; set; }
         public IList<SelectListItem> AvailableStores { get; set; }
 
+        public CheckoutAttributeValueSearchModel CheckoutAttributeValueSearchModel { get; set; }
+
+        #endregion
     }
 
     public partial class ConditionModel : BaseNopEntityModel
     {
+        public ConditionModel()
+        {
+            ConditionAttributes = new List<AttributeConditionModel>();
+        }
+
         [NopResourceDisplayName("Admin.Catalog.Attributes.CheckoutAttributes.Condition.EnableCondition")]
         public bool EnableCondition { get; set; }
 
@@ -106,7 +117,7 @@ namespace Nop.Admin.Models.Orders
         public string SelectedValueId { get; set; }
     }
 
-    public partial class CheckoutAttributeLocalizedModel : ILocalizedModelLocal
+    public partial class CheckoutAttributeLocalizedModel : ILocalizedLocaleModel
     {
         public int LanguageId { get; set; }
 
@@ -116,5 +127,7 @@ namespace Nop.Admin.Models.Orders
         [NopResourceDisplayName("Admin.Catalog.Attributes.CheckoutAttributes.Fields.TextPrompt")]
         public string TextPrompt { get; set; }
 
+        [NopResourceDisplayName("Admin.Catalog.Attributes.CheckoutAttributes.Fields.DefaultValue")]
+        public string DefaultValue { get; set; }
     }
 }

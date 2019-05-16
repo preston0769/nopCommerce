@@ -1,20 +1,20 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿using System.Linq;
+using Microsoft.AspNetCore.Mvc;
 using Nop.Web.Factories;
-using System.Linq;
-using System.Threading.Tasks;
+using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class PopularProductTagsViewComponent : ViewComponent
+    public class PopularProductTagsViewComponent : NopViewComponent
     {
         private readonly ICatalogModelFactory _catalogModelFactory;
 
         public PopularProductTagsViewComponent(ICatalogModelFactory catalogModelFactory)
         {
-            this._catalogModelFactory = catalogModelFactory;
+            _catalogModelFactory = catalogModelFactory;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync()
+        public IViewComponentResult Invoke()
         {
             var model = _catalogModelFactory.PreparePopularProductTagsModel();
 

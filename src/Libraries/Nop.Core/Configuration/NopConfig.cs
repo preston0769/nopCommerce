@@ -1,3 +1,4 @@
+﻿using Newtonsoft.Json;
 
 namespace Nop.Core.Configuration
 {
@@ -7,15 +8,11 @@ namespace Nop.Core.Configuration
     public partial class NopConfig
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the site is run on multiple instances (e.g. web farm, Windows Azure with multiple instances, etc).
-        /// Do not enable it if you run on Azure but use one instance only
+        /// Gets or sets a value indicating whether to display the full error in production environment.
+        /// It's ignored (always enabled) in development environment
         /// </summary>
-        public bool MultipleInstancesEnabled { get; set; }
-        /// <summary>
-        /// Gets or sets a value indicating whether the site is run on Windows Azure Web Apps
-        /// </summary>
-        public bool RunOnAzureWebApps { get; set; }
-
+        public bool DisplayFullErrorStack { get; set; }
+        
         /// <summary>
         /// Gets or sets connection string for Azure BLOB storage
         /// </summary>
@@ -28,16 +25,33 @@ namespace Nop.Core.Configuration
         /// Gets or sets end point for Azure BLOB storage
         /// </summary>
         public string AzureBlobStorageEndPoint { get; set; }
+        /// <summary>
+        /// Gets or sets whether or the Container Name is appended to the AzureBlobStorageEndPoint
+        /// when constructing the url
+        /// </summary>
+        public bool AzureBlobStorageAppendContainerName { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether we should use Redis server
+        /// </summary>
+        public bool RedisEnabled { get; set; }
+        /// <summary>
+        /// Gets or sets Redis connection string. Used when Redis is enabled
+        /// </summary>
+        public string RedisConnectionString { get; set; }
+        /// <summary>
+        /// Gets or sets a value indicating whether the data protection system should be configured to persist keys in the Redis database
+        /// </summary>
+        public bool UseRedisToStoreDataProtectionKeys { get; set; }
         /// <summary>
         /// Gets or sets a value indicating whether we should use Redis server for caching (instead of default in-memory caching)
         /// </summary>
-        public bool RedisCachingEnabled { get; set; }
+        public bool UseRedisForCaching { get; set; }
         /// <summary>
-        /// Gets or sets Redis connection string. Used when Redis caching is enabled
+        /// Gets or sets a value indicating whether we should use Redis server for store the plugins info (instead of default plugin.json file)
         /// </summary>
-        public string RedisCachingConnectionString { get; set; }
-        
+        public bool UseRedisToStorePluginsInfo { get; set; }
+
         /// <summary>
         /// Gets or sets path to database with user agent strings
         /// </summary>
@@ -46,11 +60,6 @@ namespace Nop.Core.Configuration
         /// Gets or sets path to database with crawler only user agent strings
         /// </summary>
         public string CrawlerOnlyUserAgentStringsPath { get; set; }
-
-        /// <summary>
-        /// Gets or sets a value indicating whether we should support previous nopCommerce versions (it can slightly improve performance)
-        /// </summary>
-        public bool SupportPreviousNopcommerceVersions { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether a store owner can install sample data during installation
@@ -67,14 +76,40 @@ namespace Nop.Core.Configuration
         public string PluginsIgnoredDuringInstallation { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether we should ignore startup tasks
+        /// Gets or sets a value indicating whether to clear /Plugins/bin directory on application startup
         /// </summary>
-        public bool IgnoreStartupTasks { get; set; }
+        public bool ClearPluginShadowDirectoryOnStartup { get; set; }
 
         /// <summary>
-        /// Gets or sets a value of "Cache-Control" header value for static content
+        /// Gets or sets a value indicating whether to copy "locked" assemblies from /Plugins/bin directory to temporary subdirectories on application startup
         /// </summary>
-        public string StaticFilesCacheControl { get; set; }
+        public bool CopyLockedPluginAssembilesToSubdirectoriesOnStartup { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether to load an assembly into the load-from context, bypassing some security checks.
+        /// </summary>
+        public bool UseUnsafeLoadAssembly { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to copy plugins library to the /Plugins/bin directory on application startup
+        /// </summary>
+        public bool UsePluginsShadowCopy { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to use backwards compatibility with SQL Server 2008 and SQL Server 2008R2
+        /// </summary>
+        public bool UseRowNumberForPaging { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether to store TempData in the session state.
+        /// By default the cookie-based TempData provider is used to store TempData in cookies.
+        /// </summary>
+        public bool UseSessionStateTempDataProvider { get; set; }
+        
+        /// <summary>
+        /// Gets a value indicating whether we should use Azure blob storage
+        /// </summary>
+        [JsonIgnore]
+        public bool AzureBlobStorageEnabled => !string.IsNullOrEmpty(AzureBlobStorageConnectionString);
     }
 }

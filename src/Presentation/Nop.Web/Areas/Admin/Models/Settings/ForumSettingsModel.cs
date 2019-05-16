@@ -1,15 +1,17 @@
 ﻿using Microsoft.AspNetCore.Mvc.Rendering;
-using Nop.Web.Framework;
-using Nop.Web.Framework.Mvc;
 using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
+using Nop.Web.Framework.Models;
 
-namespace Nop.Admin.Models.Settings
+namespace Nop.Web.Areas.Admin.Models.Settings
 {
-    public partial class ForumSettingsModel : BaseNopModel
+    /// <summary>
+    /// Represents a forum settings model
+    /// </summary>
+    public partial class ForumSettingsModel : BaseNopModel, ISettingsModel
     {
-        public int ActiveStoreScopeConfiguration { get; set; }
+        #region Properties
 
+        public int ActiveStoreScopeConfiguration { get; set; }
 
         [NopResourceDisplayName("Admin.Configuration.Settings.Forums.ForumsEnabled")]
         public bool ForumsEnabled { get; set; }
@@ -104,5 +106,6 @@ namespace Nop.Admin.Models.Settings
         public int ActiveDiscussionsPageSize { get; set; }
         public bool ActiveDiscussionsPageSize_OverrideForStore { get; set; }
 
+        #endregion
     }
 }

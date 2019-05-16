@@ -1,19 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using Nop.Core.Domain.Blogs;
+using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class BlogRssHeaderLinkViewComponent : ViewComponent
+    public class BlogRssHeaderLinkViewComponent : NopViewComponent
     {
         private readonly BlogSettings _blogSettings;
 
         public BlogRssHeaderLinkViewComponent(BlogSettings blogSettings)
         {
-            this._blogSettings = blogSettings;
+            _blogSettings = blogSettings;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync(int currentCategoryId, int currentProductId)
+        public IViewComponentResult Invoke(int currentCategoryId, int currentProductId)
         {
             if (!_blogSettings.Enabled || !_blogSettings.ShowHeaderRssUrl)
                 return Content("");

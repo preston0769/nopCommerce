@@ -1,15 +1,15 @@
-﻿using FluentValidation.Attributes;
-using Nop.Admin.Validators.Templates;
-using Nop.Web.Framework;
-using Nop.Web.Framework.Mvc;
-using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
+﻿using Nop.Web.Framework.Mvc.ModelBinding;
+using Nop.Web.Framework.Models;
 
-namespace Nop.Admin.Models.Templates
+namespace Nop.Web.Areas.Admin.Models.Templates
 {
-    [Validator(typeof(CategoryTemplateValidator))]
+    /// <summary>
+    /// Represents a category template model
+    /// </summary>
     public partial class CategoryTemplateModel : BaseNopEntityModel
     {
+        #region Properties
+
         [NopResourceDisplayName("Admin.System.Templates.Category.Name")]
         public string Name { get; set; }
 
@@ -18,5 +18,7 @@ namespace Nop.Admin.Models.Templates
 
         [NopResourceDisplayName("Admin.System.Templates.Category.DisplayOrder")]
         public int DisplayOrder { get; set; }
+
+        #endregion
     }
 }

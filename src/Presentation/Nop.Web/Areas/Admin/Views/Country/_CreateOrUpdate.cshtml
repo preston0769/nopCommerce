@@ -1,40 +1,23 @@
 ﻿@model CountryModel
-@inject IEventPublisher eventPublisher
 
-@Html.ValidationSummary(true)
-@Html.HiddenFor(model => model.Id)
+@{
+    const string hideInfoBlockAttributeName = "CountryPage.HideInfoBlock";
+    var hideInfoBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideInfoBlockAttributeName);
 
-<script>
-    $(document).ready(function () {
-        bindBootstrapTabSelectEvent('country-edit');
-    });
-</script>
+    const string hideStatesBlockAttributeName = "CountryPage.HideStatesBlock";
+    var hideStatesBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideStatesBlockAttributeName, defaultValue: true);
+}
+
+<div asp-validation-summary="All"></div>
+<input asp-for="Id" type="hidden" />
 
 <div class="content">
     <div class="form-horizontal">
-        <div id="country-edit" class="nav-tabs-custom">
-            <ul class="nav nav-tabs">
-                @Html.RenderBootstrapTabHeader("tab-info", @T("Admin.Configuration.Countries.Info"), true)
-                @Html.RenderBootstrapTabHeader("tab-states", @T("Admin.Configuration.Countries.States"))
-            </ul>
-            <div class="tab-content">
-                @Html.RenderBootstrapTabContent("tab-info", await Html.PartialAsync("_CreateOrUpdate.Info", Model), true)
-                @Html.RenderBootstrapTabContent("tab-states", await Html.PartialAsync("_CreateOrUpdate.States", Model))
-            </div>
-        </div>
+        <nop-panels id="country-panels">
+            <nop-panel asp-name="country-info" asp-icon="fa fa-info" asp-title="@T("Admin.Configuration.Countries.Info")" asp-hide-block-attribute-name="@hideInfoBlockAttributeName" asp-hide="@hideInfoBlock" asp-advanced="false">@await Html.PartialAsync("_CreateOrUpdate.Info", Model)</nop-panel>
+            <nop-panel asp-name="country-states" asp-icon="fa fa-globe"asp-title="@T("Admin.Configuration.Countries.States")" asp-hide-block-attribute-name="@hideStatesBlockAttributeName" asp-hide="@hideStatesBlock" asp-advanced="false">@await Html.PartialAsync("_CreateOrUpdate.States", Model)</nop-panel>
+            
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.CountryDetailsBlock, additionalData = Model })
+        </nop-panels>
     </div>
 </div>
-
-@{
-    //custom tabs
-    var eventMessage = new AdminTabStripCreated(this.Html, "country-edit");
-    eventPublisher.Publish(eventMessage);
-    foreach (var eventBlock in eventMessage.BlocksToRender)
-    {
-        @eventBlock
-    }
-}
-
-
-@*save selected tab name*@
-<input type="hidden" id="selected-tab-name" name="selected-tab-name" value="@(Html.GetSelectedTabName())">

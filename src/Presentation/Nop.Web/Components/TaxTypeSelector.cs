@@ -1,11 +1,11 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Nop.Web.Factories;
-using System.Threading.Tasks;
 using Nop.Core.Domain.Tax;
+using Nop.Web.Factories;
+using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class TaxTypeSelectorViewComponent : ViewComponent
+    public class TaxTypeSelectorViewComponent : NopViewComponent
     {
         private readonly ICommonModelFactory _commonModelFactory;
         private readonly TaxSettings _taxSettings;
@@ -13,11 +13,11 @@ namespace Nop.Web.Components
         public TaxTypeSelectorViewComponent(ICommonModelFactory commonModelFactory,
             TaxSettings taxSettings)
         {
-            this._commonModelFactory = commonModelFactory;
-            this._taxSettings = taxSettings;
+            _commonModelFactory = commonModelFactory;
+            _taxSettings = taxSettings;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync()
+        public IViewComponentResult Invoke()
         {
             if (!_taxSettings.AllowCustomersToSelectTaxDisplayType)
                 return Content("");

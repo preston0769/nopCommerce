@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using FluentValidation.Attributes;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Nop.Admin.Validators.Directory;
-using Nop.Web.Framework;
-using Nop.Web.Framework.Localization;
-using Nop.Web.Framework.Mvc;
+using Nop.Web.Framework.Models;
 using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
 
-namespace Nop.Admin.Models.Directory
+namespace Nop.Web.Areas.Admin.Models.Directory
 {
-    [Validator(typeof(CurrencyValidator))]
-    public partial class CurrencyModel : BaseNopEntityModel, ILocalizedModel<CurrencyLocalizedModel>
+    /// <summary>
+    /// Represents a currency model
+    /// </summary>
+    public partial class CurrencyModel : BaseNopEntityModel, ILocalizedModel<CurrencyLocalizedModel>, IStoreMappingSupportedModel
     {
+        #region Ctor
+
         public CurrencyModel()
         {
             Locales = new List<CurrencyLocalizedModel>();
@@ -22,6 +20,11 @@ namespace Nop.Admin.Models.Directory
             SelectedStoreIds = new List<int>();
             AvailableStores = new List<SelectListItem>();
         }
+
+        #endregion
+
+        #region Properties
+
         [NopResourceDisplayName("Admin.Configuration.Currencies.Fields.Name")]
         public string Name { get; set; }
 
@@ -55,16 +58,17 @@ namespace Nop.Admin.Models.Directory
         public IList<CurrencyLocalizedModel> Locales { get; set; }
 
         //store mapping
-        [NopResourceDisplayName("Admin.ContentManagement.Blog.BlogPosts.Fields.LimitedToStores")]
-        [UIHint("MultiSelect")]
+        [NopResourceDisplayName("Admin.Configuration.Currencies.Fields.LimitedToStores")]
         public IList<int> SelectedStoreIds { get; set; }
         public IList<SelectListItem> AvailableStores { get; set; }
 
         [NopResourceDisplayName("Admin.Configuration.Currencies.Fields.RoundingType")]
         public int RoundingTypeId { get; set; }
+
+        #endregion
     }
 
-    public partial class CurrencyLocalizedModel : ILocalizedModelLocal
+    public partial class CurrencyLocalizedModel : ILocalizedLocaleModel
     {
         public int LanguageId { get; set; }
 

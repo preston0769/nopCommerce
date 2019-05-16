@@ -1,16 +1,16 @@
 ﻿using System;
-using FluentValidation.Attributes;
-using Nop.Admin.Validators.Forums;
-using Nop.Web.Framework;
-using Nop.Web.Framework.Mvc;
 using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
+using Nop.Web.Framework.Models;
 
-namespace Nop.Admin.Models.Forums
+namespace Nop.Web.Areas.Admin.Models.Forums
 {
-    [Validator(typeof(ForumGroupValidator))]
+    /// <summary>
+    /// Represents a forum group model
+    /// </summary>
     public partial class ForumGroupModel : BaseNopEntityModel
     {
+        #region Properties
+
         [NopResourceDisplayName("Admin.ContentManagement.Forums.ForumGroup.Fields.Name")]
         public string Name { get; set; }
 
@@ -19,5 +19,7 @@ namespace Nop.Admin.Models.Forums
 
         [NopResourceDisplayName("Admin.ContentManagement.Forums.ForumGroup.Fields.CreatedOn")]
         public DateTime CreatedOn { get; set; }
+
+        #endregion
     }
 }

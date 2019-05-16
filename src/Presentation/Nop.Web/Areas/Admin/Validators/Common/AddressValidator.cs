@@ -1,9 +1,9 @@
 ﻿using FluentValidation;
-using Nop.Admin.Models.Common;
+using Nop.Web.Areas.Admin.Models.Common;
 using Nop.Services.Localization;
 using Nop.Web.Framework.Validators;
 
-namespace Nop.Admin.Validators.Common
+namespace Nop.Web.Areas.Admin.Validators.Common
 {
     public partial class AddressValidator : BaseNopValidator<AddressModel>
     {
@@ -37,6 +37,10 @@ namespace Nop.Admin.Validators.Common
                 .NotEqual(0)
                 .WithMessage(localizationService.GetResource("Admin.Address.Fields.Country.Required"))
                 .When(x => x.CountryEnabled && x.CountryRequired);
+            RuleFor(x => x.County)
+                .NotEmpty()
+                .WithMessage(localizationService.GetResource("Admin.Address.Fields.County.Required"))
+                .When(x => x.CountyEnabled && x.CountyRequired);
             RuleFor(x => x.City)
                 .NotEmpty()
                 .WithMessage(localizationService.GetResource("Admin.Address.Fields.City.Required"))

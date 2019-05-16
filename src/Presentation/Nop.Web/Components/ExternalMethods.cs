@@ -1,10 +1,10 @@
-﻿using System.Threading.Tasks;
-using Microsoft.AspNetCore.Mvc;
+﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Web.Factories;
+using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class ExternalMethodsViewComponent : ViewComponent
+    public class ExternalMethodsViewComponent : NopViewComponent
     {
         #region Fields
 
@@ -16,14 +16,14 @@ namespace Nop.Web.Components
 
         public ExternalMethodsViewComponent(IExternalAuthenticationModelFactory externalAuthenticationModelFactory)
         {
-            this._externalAuthenticationModelFactory = externalAuthenticationModelFactory;
+            _externalAuthenticationModelFactory = externalAuthenticationModelFactory;
         }
 
         #endregion
 
         #region Methods
 
-        public async Task<IViewComponentResult> InvokeAsync()
+        public IViewComponentResult Invoke()
         {
             var model = _externalAuthenticationModelFactory.PrepareExternalMethodsModel();
 

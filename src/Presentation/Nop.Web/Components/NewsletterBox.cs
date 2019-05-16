@@ -1,24 +1,22 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using Nop.Web.Factories;
-using System.Threading.Tasks;
 using Nop.Core.Domain.Customers;
+using Nop.Web.Factories;
+using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class NewsletterBoxViewComponent : ViewComponent
+    public class NewsletterBoxViewComponent : NopViewComponent
     {
+        private readonly CustomerSettings _customerSettings;
         private readonly INewsletterModelFactory _newsletterModelFactory;
 
-        private readonly CustomerSettings _customerSettings;
-
-        public NewsletterBoxViewComponent(INewsletterModelFactory newsletterModelFactory,
-            CustomerSettings customerSettings)
+        public NewsletterBoxViewComponent(CustomerSettings customerSettings, INewsletterModelFactory newsletterModelFactory)
         {
-            this._newsletterModelFactory = newsletterModelFactory;
-            this._customerSettings = customerSettings;
+            _customerSettings = customerSettings;
+            _newsletterModelFactory = newsletterModelFactory;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync()
+        public IViewComponentResult Invoke()
         {
             if (_customerSettings.HideNewsletterBlock)
                 return Content("");

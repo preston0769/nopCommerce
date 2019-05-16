@@ -1,13 +1,28 @@
-﻿using Nop.Admin.Models.Common;
-using Nop.Web.Framework.Mvc;
-using Nop.Web.Framework.Mvc.Models;
+﻿using Nop.Web.Areas.Admin.Models.Common;
+using Nop.Web.Framework.Models;
 
-namespace Nop.Admin.Models.Customers
+namespace Nop.Web.Areas.Admin.Models.Customers
 {
+    /// <summary>
+    /// Represents a customer address model
+    /// </summary>
     public partial class CustomerAddressModel : BaseNopModel
     {
+        #region Ctor
+
+        public CustomerAddressModel()
+        {
+            Address = new AddressModel();
+        }
+
+        #endregion
+
+        #region Properties
+
         public int CustomerId { get; set; }
 
         public AddressModel Address { get; set; }
+
+        #endregion
     }
 }

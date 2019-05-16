@@ -1,19 +1,17 @@
 ﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using FluentValidation.Attributes;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Nop.Admin.Validators.Plugins;
-using Nop.Web.Framework;
-using Nop.Web.Framework.Localization;
-using Nop.Web.Framework.Mvc;
+using Nop.Web.Framework.Models;
 using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
 
-namespace Nop.Admin.Models.Plugins
+namespace Nop.Web.Areas.Admin.Models.Plugins
 {
-    [Validator(typeof(PluginValidator))]
-    public partial class PluginModel : BaseNopModel, ILocalizedModel<PluginLocalizedModel>
+    /// <summary>
+    /// Represents a plugin model
+    /// </summary>
+    public partial class PluginModel : BaseNopModel, IAclSupportedModel, ILocalizedModel<PluginLocalizedModel>, IPluginModel, IStoreMappingSupportedModel
     {
+        #region Ctor
+
         public PluginModel()
         {
             Locales = new List<PluginLocalizedModel>();
@@ -23,6 +21,11 @@ namespace Nop.Admin.Models.Plugins
             SelectedCustomerRoleIds = new List<int>();
             AvailableCustomerRoles = new List<SelectListItem>();
         }
+
+        #endregion
+
+        #region Properties
+
         [NopResourceDisplayName("Admin.Configuration.Plugins.Fields.Group")]
         public string Group { get; set; }
 
@@ -50,6 +53,7 @@ namespace Nop.Admin.Models.Plugins
         public string Description { get; set; }
 
         public bool CanChangeEnabled { get; set; }
+
         [NopResourceDisplayName("Admin.Configuration.Plugins.Fields.IsEnabled")]
         public bool IsEnabled { get; set; }
 
@@ -60,17 +64,22 @@ namespace Nop.Admin.Models.Plugins
 
         //ACL (customer roles)
         [NopResourceDisplayName("Admin.Configuration.Plugins.Fields.AclCustomerRoles")]
-        [UIHint("MultiSelect")]
         public IList<int> SelectedCustomerRoleIds { get; set; }
+
         public IList<SelectListItem> AvailableCustomerRoles { get; set; }
 
         //store mapping
         [NopResourceDisplayName("Admin.Configuration.Plugins.Fields.LimitedToStores")]
-        [UIHint("MultiSelect")]
         public IList<int> SelectedStoreIds { get; set; }
+
         public IList<SelectListItem> AvailableStores { get; set; }
+
+        public bool IsActive { get; set; }
+
+        #endregion
     }
-    public partial class PluginLocalizedModel : ILocalizedModelLocal
+
+    public partial class PluginLocalizedModel : ILocalizedLocaleModel
     {
         public int LanguageId { get; set; }
 

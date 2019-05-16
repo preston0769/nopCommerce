@@ -1,4 +1,4 @@
-﻿@model PermissionMappingModel
+@model PermissionMappingModel
 
 @{
     //page title
@@ -7,9 +7,7 @@
     Html.SetActiveMenuItemSystemName("Access control list");
 }
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
+<form asp-controller="Security" asp-action="Permissions" method="post">
     <div class="content-header clearfix">
         <h1 class="pull-left">
             @T("Admin.Configuration.ACL")
@@ -19,6 +17,7 @@
                 <i class="fa fa-floppy-o"></i>
                 @T("Admin.Common.Save")
             </button>
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.PermissionListButtons })
         </div>
     </div>
 
@@ -40,7 +39,7 @@
                         }
                         else
                         {
-                            <script type="text/javascript">
+                            <script>
                                 $(document).ready(function () {
                                     @foreach (var cr in Model.AvailableCustomerRoles)
                                     {
@@ -55,7 +54,7 @@
                             </script>
                             <div class="scroll-wrapper">
                                 <table class="table table-hover table-bordered">
-                                    <tbody>
+                                    <thead>
                                         <tr>
                                             <th scope="col">
                                                 <strong>@T("Admin.Configuration.ACL.Permission")</strong>
@@ -72,6 +71,8 @@
                                                 </th>
                                             }
                                         </tr>
+                                    </thead>
+                                    <tbody>
                                         @foreach (var pr in Model.AvailablePermissions)
                                         {
                                             <tr>
@@ -96,4 +97,4 @@
             </div>
         </div>
     </div>
-}
+</form>

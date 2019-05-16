@@ -1,5 +1,4 @@
-﻿@model CustomerUserSettingsModel
-@inject IEventPublisher eventPublisher
+@model CustomerUserSettingsModel
 
 @{
     //page title
@@ -8,9 +7,27 @@
     Html.SetActiveMenuItemSystemName("Customer and user settings");
 }
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
+@{
+    const string hideCommonBlockAttributeName = "CustomerUserSettingsPage.HideCommonBlock";
+    var hideCommonBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideCommonBlockAttributeName);
+
+    const string hideSecurityBlockAttributeName = "CustomerUserSettingsPage.HideSecurityBlock";
+    var hideSecurityBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideSecurityBlockAttributeName);
+
+    const string hideAccountBlockAttributeName = "CustomerUserSettingsPage.HideAccountBlock";
+    var hideAccountBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideAccountBlockAttributeName);
+
+    const string hideProfileBlockAttributeName = "CustomerUserSettingsPage.HideProfileBlock";
+    var hideProfileBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideProfileBlockAttributeName);
+
+    const string hideCustomerFormFieldsBlockAttributeName = "CustomerUserSettingsPage.HideCustomerFormFieldsBlock";
+    var hideCustomerFormFieldsBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideCustomerFormFieldsBlockAttributeName);
+
+    const string hideAddressFormFieldsBlockAttributeName = "CustomerUserSettingsPage.HideAddressFormFieldsBlock";
+    var hideAddressFormFieldsBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideAddressFormFieldsBlockAttributeName);
+}
+
+<form asp-controller="Setting" asp-action="CustomerUser" method="post">
     <div class="content-header clearfix">
         <h1 class="pull-left">
             @T("Admin.Configuration.Settings.CustomerUser")
@@ -20,45 +37,25 @@
                 <i class="fa fa-floppy-o"></i>
                 @T("Admin.Common.Save")
             </button>
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.CustomerUserSettingsButtons })
         </div>
     </div>
-    @Html.ValidationSummary(false)
-
-    <script>
-        $(document).ready(function () {
-            bindBootstrapTabSelectEvent('customersettings-edit');
-        });
-    </script>
+    <div asp-validation-summary="All"></div>
 
     <div class="content">
         <div class="form-horizontal">
             @await Component.InvokeAsync("SettingMode")
+            
+            <nop-panels id="customersettings-panels">
+                <nop-panel asp-name="customersettings-common" asp-icon="fa fa-info" asp-title="@T("Admin.Configuration.Settings.CustomerUser.BlockTitle.Common")" asp-hide-block-attribute-name="@hideCommonBlockAttributeName" asp-hide="@hideCommonBlock" asp-advanced="false">@await Html.PartialAsync("_CustomerUser.Common", Model)</nop-panel>
+                <nop-panel asp-name="customersettings-security" asp-icon="fa fa-shield" asp-title="@T("Admin.Configuration.Settings.CustomerUser.BlockTitle.Password")" asp-hide-block-attribute-name="@hideSecurityBlockAttributeName" asp-hide="@hideSecurityBlock" asp-advanced="true">@await Html.PartialAsync("_CustomerUser.Security", Model)</nop-panel>
+                <nop-panel asp-name="customersettings-account" asp-icon="fa fa-user" asp-title="@T("Admin.Configuration.Settings.CustomerUser.BlockTitle.Account")" asp-hide-block-attribute-name="@hideAccountBlockAttributeName" asp-hide="@hideAccountBlock" asp-advanced="true">@await Html.PartialAsync("_CustomerUser.Account", Model)</nop-panel>
+                <nop-panel asp-name="customersettings-profile" asp-icon="fa fa-user-circle-o" asp-title="@T("Admin.Configuration.Settings.CustomerUser.BlockTitle.Profile")" asp-hide-block-attribute-name="@hideProfileBlockAttributeName" asp-hide="@hideProfileBlock" asp-advanced="true">@await Html.PartialAsync("_CustomerUser.Profile", Model)</nop-panel>
+                <nop-panel asp-name="customersettings-customerformfields" asp-icon="fa fa-align-justify" asp-title="@T("Admin.Configuration.Settings.CustomerUser.CustomerFormFields")" asp-hide-block-attribute-name="@hideCustomerFormFieldsBlockAttributeName" asp-hide="@hideCustomerFormFieldsBlock" asp-advanced="false">@await Html.PartialAsync("_CustomerUser.CustomerFormFields", Model)</nop-panel>
+                <nop-panel asp-name="customersettings-addressformfields" asp-icon="fa fa-address-book-o" asp-title="@T("Admin.Configuration.Settings.CustomerUser.AddressFormFields")" asp-hide-block-attribute-name="@hideAddressFormFieldsBlockAttributeName" asp-hide="@hideAddressFormFieldsBlock" asp-advanced="false">@await Html.PartialAsync("_CustomerUser.AddressFormFields", Model)</nop-panel>
 
-            <div id="customersettings-edit" class="nav-tabs-custom">
-                <ul class="nav nav-tabs">
-                    @Html.RenderBootstrapTabHeader("tab-customer", @T("Admin.Configuration.Settings.CustomerUser.CustomerSettings"), true)
-                    @Html.RenderBootstrapTabHeader("tab-customerformfields", @T("Admin.Configuration.Settings.CustomerUser.CustomerFormFields"))
-                    @Html.RenderBootstrapTabHeader("tab-addressformfields", @T("Admin.Configuration.Settings.CustomerUser.AddressFormFields"))
-                </ul>
-                <div class="tab-content">
-                    @Html.RenderBootstrapTabContent("tab-customer", await Html.PartialAsync("_CustomerUser.Settings", Model), true)
-                    @Html.RenderBootstrapTabContent("tab-customerformfields", await Html.PartialAsync("_CustomerUser.CustomerFormFields", Model))
-                    @Html.RenderBootstrapTabContent("tab-addressformfields", await Html.PartialAsync("_CustomerUser.AddressFormFields", Model))
-                </div>
-            </div>
+                @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.CustomerUserDetailsBlock, additionalData = Model })
+            </nop-panels>
         </div>
     </div>
-
-    {
-        //custom tabs
-        var eventMessage = new AdminTabStripCreated(this.Html, "customersettings-edit");
-        eventPublisher.Publish(eventMessage);
-        foreach (var eventBlock in eventMessage.BlocksToRender)
-        {
-            @eventBlock
-        }
-    }
-
-    @*save selected tab name*@
-    <input type="hidden" id="selected-tab-name" name="selected-tab-name" value="@(Html.GetSelectedTabName())">
-}
+</form>

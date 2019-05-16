@@ -1,15 +1,15 @@
-﻿using FluentValidation.Attributes;
-using Nop.Admin.Validators.Templates;
-using Nop.Web.Framework;
-using Nop.Web.Framework.Mvc;
-using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
+﻿using Nop.Web.Framework.Mvc.ModelBinding;
+using Nop.Web.Framework.Models;
 
-namespace Nop.Admin.Models.Templates
+namespace Nop.Web.Areas.Admin.Models.Templates
 {
-    [Validator(typeof(ProductTemplateValidator))]
+    /// <summary>
+    /// Represents a product template model
+    /// </summary>
     public partial class ProductTemplateModel : BaseNopEntityModel
     {
+        #region Properties
+
         [NopResourceDisplayName("Admin.System.Templates.Product.Name")]
         public string Name { get; set; }
 
@@ -21,5 +21,7 @@ namespace Nop.Admin.Models.Templates
 
         [NopResourceDisplayName("Admin.System.Templates.Product.IgnoredProductTypes")]
         public string IgnoredProductTypes { get; set; }
+
+        #endregion
     }
 }

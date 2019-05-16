@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using Microsoft.AspNetCore.Routing;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -100,7 +99,7 @@ namespace Nop.Web.Framework.Localization
                 if (routeCollection == null)
                     continue;
 
-                for (int i = 0; i < routeCollection.Count; i++)
+                for (var i = 0; i < routeCollection.Count; i++)
                 {
                     var route = routeCollection[i];
                     (route as LocalizedRoute)?.ClearSeoFriendlyUrlsCachedValue();

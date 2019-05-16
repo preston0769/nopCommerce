@@ -1,19 +1,19 @@
 ﻿using Microsoft.AspNetCore.Mvc;
 using Nop.Web.Factories;
-using System.Threading.Tasks;
+using Nop.Web.Framework.Components;
 
 namespace Nop.Web.Components
 {
-    public class TopicBlockViewComponent : ViewComponent
+    public class TopicBlockViewComponent : NopViewComponent
     {
         private readonly ITopicModelFactory _topicModelFactory;
 
         public TopicBlockViewComponent(ITopicModelFactory topicModelFactory)
         {
-            this._topicModelFactory = topicModelFactory;
+            _topicModelFactory = topicModelFactory;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync(string systemName)
+        public IViewComponentResult Invoke(string systemName)
         {
             var model = _topicModelFactory.PrepareTopicModelBySystemName(systemName);
             if (model == null)

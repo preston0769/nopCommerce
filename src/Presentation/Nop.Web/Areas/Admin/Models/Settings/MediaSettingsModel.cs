@@ -1,12 +1,15 @@
-﻿using Nop.Web.Framework;
-using Nop.Web.Framework.Mvc;
-using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
+﻿using Nop.Web.Framework.Mvc.ModelBinding;
+using Nop.Web.Framework.Models;
 
-namespace Nop.Admin.Models.Settings
+namespace Nop.Web.Areas.Admin.Models.Settings
 {
-    public partial class MediaSettingsModel : BaseNopModel
+    /// <summary>
+    /// Represents a media settings model
+    /// </summary>
+    public partial class MediaSettingsModel : BaseNopModel, ISettingsModel
     {
+        #region Properties
+
         public int ActiveStoreScopeConfiguration { get; set; }
 
         [NopResourceDisplayName("Admin.Configuration.Settings.Media.PicturesStoredIntoDatabase")]
@@ -71,5 +74,7 @@ namespace Nop.Admin.Models.Settings
         [NopResourceDisplayName("Admin.Configuration.Settings.Media.DefaultPictureZoomEnabled")]
         public bool DefaultPictureZoomEnabled { get; set; }
         public bool DefaultPictureZoomEnabled_OverrideForStore { get; set; }
+
+        #endregion
     }
 }

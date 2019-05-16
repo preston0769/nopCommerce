@@ -1,4 +1,4 @@
-﻿@model CampaignModel
+@model CampaignModel
 @{
     //page title
     ViewBag.Title = T("Admin.Promotions.Campaigns.EditCampaignDetails").Text;
@@ -6,13 +6,14 @@
     Html.SetActiveMenuItemSystemName("Campaigns");
 }
 
-@using (Html.BeginForm())
-{
-    @Html.AntiForgeryToken()
+<form asp-controller="Campaign" asp-action="Edit" method="post">
     <div class="content-header clearfix">
         <h1 class="pull-left">
             @T("Admin.Promotions.Campaigns.EditCampaignDetails") - @Model.Name 
-            <small><i class="fa fa-arrow-circle-left"></i>@Html.ActionLink(T("Admin.Promotions.Campaigns.BackToList").Text, "List")</small>
+            <small>
+                <i class="fa fa-arrow-circle-left"></i>
+                <a asp-action="List">@T("Admin.Promotions.Campaigns.BackToList")</a>
+            </small>
         </h1>
         <div class="pull-right">
             <button type="submit" name="save" class="btn bg-blue">
@@ -27,8 +28,9 @@
                 <i class="fa fa-trash-o"></i>
                 @T("Admin.Common.Delete")
             </span>
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.CampaignDetailsButtons, additionalData = Model })
         </div>
     </div>
     @await Html.PartialAsync("_CreateOrUpdate", Model)
-}
-@Html.DeleteConfirmation("campaign-delete")
+</form>
+<nop-delete-confirmation asp-model-id="@Model.Id" asp-button-id="campaign-delete" />

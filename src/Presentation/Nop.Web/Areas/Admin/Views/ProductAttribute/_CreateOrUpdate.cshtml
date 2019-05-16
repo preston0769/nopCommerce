@@ -1,47 +1,33 @@
 ﻿@model ProductAttributeModel
-@inject IEventPublisher eventPublisher
 
-@Html.ValidationSummary(false)
-@Html.HiddenFor(model => model.Id)
-
-<script>
-    $(document).ready(function() {
-        bindBootstrapTabSelectEvent('product-attribute-edit');
-    });
-</script>
-
-<div class="content">
-    <div class="form-horizontal">
-        <div id="product-attribute-edit" class="nav-tabs-custom">
-            <ul class="nav nav-tabs">
-                @Html.RenderBootstrapTabHeader("tab-info", @T("Admin.Catalog.Attributes.ProductAttributes.Info"), true)
-                @if (Model.Id > 0)
-                {
-                    @Html.RenderBootstrapTabHeader("tab-used-by-products", @T("Admin.Catalog.Attributes.ProductAttributes.UsedByProducts"))
-                }
-                @Html.RenderBootstrapTabHeader("tab-predefined-values", @T("Admin.Catalog.Attributes.ProductAttributes.PredefinedValues"))
-            </ul>
-            <div class="tab-content">
-                @Html.RenderBootstrapTabContent("tab-info", await Html.PartialAsync("_CreateOrUpdate.Info"), true)
-                @if (Model.Id > 0)
-                {
-                    @Html.RenderBootstrapTabContent("tab-used-by-products", await Html.PartialAsync("_CreateOrUpdate.UsedByProducts"))
-                }
-                @Html.RenderBootstrapTabContent("tab-predefined-values", await Html.PartialAsync("_CreateOrUpdate.PredefinedValues"))
-            </div>
-        </div>
-    </div>
-</div>
-
+@inject Nop.Services.Common.IGenericAttributeService genericAttributeService
+@inject IWorkContext workContext
 @{
-    //custom tabs
-    var eventMessage = new AdminTabStripCreated(this.Html, "product-attribute-edit");
-    eventPublisher.Publish(eventMessage);
-    foreach (var eventBlock in eventMessage.BlocksToRender)
-    {
-        @eventBlock
-    }
+
+	const string hideInfoBlockAttributeName = "ProductAttributePage.HideInfoBlock";
+	var hideInfoBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideInfoBlockAttributeName);
+
+	const string hideUsedByProductsBlockAttributeName = "ProductAttributePage.HideUsedByProductsBlock";
+	var hideUsedByProductsBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideUsedByProductsBlockAttributeName, defaultValue: true);
+
+	const string hidePredefinedValuesBlockAttributeName = "ProductAttributePage.HidePredefinedValuesBlock";
+	var hidePredefinedValuesBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hidePredefinedValuesBlockAttributeName, defaultValue: true);
+
 }
 
-@*save selected tab name*@
-<input type="hidden" id="selected-tab-name" name="selected-tab-name" value="@(Html.GetSelectedTabName())">
+<div asp-validation-summary="All"></div>
+<input asp-for="Id" type="hidden" />
+
+<div class="content">
+	<div class="form-horizontal">
+        <div id="product-attribute-edit">
+            <nop-panels id="product-attribute-panels">
+                <nop-panel asp-name="product-attribute-info" asp-icon="fa fa-info" asp-title="@T("Admin.Catalog.Attributes.ProductAttributes.Info")" asp-hide-block-attribute-name="@hideInfoBlockAttributeName" asp-hide="@hideInfoBlock" asp-advanced="false">@await Html.PartialAsync("_CreateOrUpdate.Info", Model)</nop-panel>
+                <nop-panel asp-name="product-attribute-used-by-products" asp-icon="fa fa-object-group" asp-title="@T("Admin.Catalog.Attributes.ProductAttributes.UsedByProducts")" asp-hide-block-attribute-name="@hideUsedByProductsBlockAttributeName" asp-hide="@hideUsedByProductsBlock" asp-advanced="false">@await Html.PartialAsync("_CreateOrUpdate.UsedByProducts", Model)</nop-panel>
+                <nop-panel asp-name="product-attribute-predefined-values" asp-icon="fa fa-check-square-o" asp-title="@T("Admin.Catalog.Attributes.ProductAttributes.PredefinedValues")" asp-hide-block-attribute-name="@hidePredefinedValuesBlockAttributeName" asp-hide="@hidePredefinedValuesBlock" asp-advanced="true">@await Html.PartialAsync("_CreateOrUpdate.PredefinedValues", Model)</nop-panel>
+                	
+                @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.ProductAttributeDetailsBlock, additionalData = Model })
+            </nop-panels>
+        </div>
+	</div>
+</div>

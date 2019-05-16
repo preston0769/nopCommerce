@@ -22,17 +22,17 @@ var Checkout = {
         var descendants = element.find('*');
         $(descendants).each(function() {
             if (isDisabled) {
-                $(this).attr('disabled', 'disabled');
+                $(this).prop("disabled", true);
             } else {
-                $(this).removeAttr('disabled');
+                $(this).prop("disabled", false);
             }
         });
 
         if (isDisabled) {
-                element.attr('disabled', 'disabled');
-            } else {
-                element.removeAttr('disabled');
-            }
+            element.prop("disabled", true);
+        } else {
+            $(this).prop("disabled", false);
+        }
     },
 
     setLoadWaiting: function (step, keepDisabled) {
@@ -123,6 +123,7 @@ var Billing = {
         } else {
             $('#billing-new-address-form').hide();
         }
+        $(document).trigger({ type: "onepagecheckout_billing_address_new" });
     },
 
     resetSelectedAddress: function () {
@@ -130,6 +131,7 @@ var Billing = {
         if (selectElement) {
             selectElement.val('');
         }
+        $(document).trigger({ type: "onepagecheckout_billing_address_reset" }); 
     },
 
     save: function () {
@@ -178,6 +180,13 @@ var Billing = {
         }
 
         Checkout.setStepResponse(response);
+        Billing.initializeCountrySelect();
+    },
+    
+    initializeCountrySelect: function () {
+        if ($('#opc-billing').has('select[data-trigger="country-select"]')) {
+            $('#opc-billing select[data-trigger="country-select"]').countrySelect();
+        }
     }
 };
 
@@ -199,9 +208,11 @@ var Shipping = {
         } else {
             $('#shipping-new-address-form').hide();
         }
+        $(document).trigger({ type: "onepagecheckout_shipping_address_new" });
+        Shipping.initializeCountrySelect();
     },
 
-    togglePickUpInStore: function (pickupInStoreInput) {
+    togglePickupInStore: function (pickupInStoreInput) {
         if (pickupInStoreInput.checked) {
             $('#pickup-points-form').show();
             $('#shipping-addresses-form').hide();
@@ -217,13 +228,14 @@ var Shipping = {
         if (selectElement) {
             selectElement.val('');
         }
+        $(document).trigger({ type: "onepagecheckout_shipping_address_reset" });
     },
 
     save: function () {
         if (Checkout.loadWaiting != false) return;
 
         Checkout.setLoadWaiting('shipping');
-        
+
         $.ajax({
             cache: false,
             url: this.saveUrl,
@@ -251,6 +263,12 @@ var Shipping = {
         }
 
         Checkout.setStepResponse(response);
+    },
+
+    initializeCountrySelect: function () {
+        if ($('#opc-shipping').has('select[data-trigger="country-select"]')) {
+            $('#opc-shipping select[data-trigger="country-select"]').countrySelect();
+        }
     }
 };
 
@@ -265,7 +283,7 @@ var ShippingMethod = {
         this.saveUrl = saveUrl;
     },
 
-    validate: function() {
+    validate: function () {
         var methods = document.getElementsByName('shippingoption');
         if (methods.length==0) {
             alert('Your order cannot be completed at this time as there is no shipping methods available for it. Please make necessary changes in your shipping address.');

@@ -1,47 +1,30 @@
 ﻿@model AffiliateModel
-@inject IEventPublisher eventPublisher
 
-@Html.ValidationSummary(false)
-@Html.HiddenFor(model => model.Id)
+@{
+    const string hideInfoBlockAttributeName = "AffiliatePage.HideInfoBlock";
+    var hideInfoBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideInfoBlockAttributeName);
 
-<script>
-    $(document).ready(function() {
-        bindBootstrapTabSelectEvent('affiliate-edit');
-    });
-</script>
+    const string hideCustomersBlockAttributeName = "AffiliatePage.HideCustomersBlock";
+    var hideCustomersBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideCustomersBlockAttributeName, defaultValue: true);
+
+    const string hideOrdersBlockAttributeName = "AffiliatePage.HideOrdersBlock";
+    var hideOrdersBlock = genericAttributeService.GetAttribute<bool>(workContext.CurrentCustomer, hideOrdersBlockAttributeName, defaultValue: true);
+}
+
+<div asp-validation-summary="All"></div>
+<input asp-for="Id" type="hidden" />
 
 <div class="content">
     <div class="form-horizontal">
-        <div id="affiliate-edit" class="nav-tabs-custom">
-            <ul class="nav nav-tabs">
-                @Html.RenderBootstrapTabHeader("tab-info", @T("Admin.Affiliates.Info"), true)
-                @if (Model.Id > 0)
-                {
-                    @Html.RenderBootstrapTabHeader("tab-customers", @T("Admin.Affiliates.Customers"))
-                    @Html.RenderBootstrapTabHeader("tab-orders", @T("Admin.Affiliates.Orders"))
-                }
-            </ul>
-            <div class="tab-content">
-                @Html.RenderBootstrapTabContent("tab-info", await Html.PartialAsync("_CreateOrUpdate.Info", Model), true)
-                @if (Model.Id > 0)
-                {
-                    @Html.RenderBootstrapTabContent("tab-customers", await Html.PartialAsync("_CreateOrUpdate.Customers", Model))
-                    @Html.RenderBootstrapTabContent("tab-orders", await Html.PartialAsync("_CreateOrUpdate.Orders", Model.AffiliatedOrderList))
-                }
-            </div>
-        </div>
+        <nop-panels id="affiliate-panels">
+            <nop-panel asp-name="affiliate-info" asp-icon="fa fa-info" asp-title="@T("Admin.Affiliates.Info")" asp-hide-block-attribute-name="@hideInfoBlockAttributeName" asp-hide="@hideInfoBlock">@await Html.PartialAsync("_CreateOrUpdate.Info", Model)</nop-panel>
+            @if (Model.Id > 0)
+            {
+                <nop-panel asp-name="affiliate-customers" asp-icon="fa fa-user" asp-title="@T("Admin.Affiliates.Customers")" asp-hide-block-attribute-name="@hideCustomersBlockAttributeName" asp-hide="@hideCustomersBlock">@await Html.PartialAsync("_CreateOrUpdate.Customers", Model)</nop-panel>
+                <nop-panel asp-name="affiliate-orders" asp-icon="fa fa-cart-plus" asp-title="@T("Admin.Affiliates.Orders")" asp-hide-block-attribute-name="@hideOrdersBlockAttributeName" asp-hide="@hideOrdersBlock">@await Html.PartialAsync("_CreateOrUpdate.Orders", Model)</nop-panel>
+            }
+            
+            @await Component.InvokeAsync("AdminWidget", new { widgetZone = AdminWidgetZones.AffiliateDetailsBlock, additionalData = Model })
+        </nop-panels>
     </div>
 </div>
-
-@{
-    //custom tabs
-    var eventMessage = new AdminTabStripCreated(this.Html, "affiliate-edit");
-    eventPublisher.Publish(eventMessage);
-    foreach (var eventBlock in eventMessage.BlocksToRender)
-    {
-        @eventBlock
-    }
-}
-
-@*save selected tab name*@
-<input type="hidden" id="selected-tab-name" name="selected-tab-name" value="@(Html.GetSelectedTabName())">

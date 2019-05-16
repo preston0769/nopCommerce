@@ -1,11 +1,18 @@
-﻿using Nop.Web.Framework.Mvc;
-using Nop.Web.Framework.Mvc.Models;
+﻿using Nop.Web.Framework.Models;
 
-namespace Nop.Admin.Models.Security
+namespace Nop.Web.Areas.Admin.Models.Security
 {
+    /// <summary>
+    /// Represents a permission record model
+    /// </summary>
     public partial class PermissionRecordModel : BaseNopModel
     {
+        #region Properties
+
         public string Name { get; set; }
+
         public string SystemName { get; set; }
+
+        #endregion
     }
 }

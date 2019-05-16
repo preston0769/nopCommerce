@@ -2,17 +2,17 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Net;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Nop.Plugin.Payments.Manual.Models;
+using Nop.Web.Framework.Components;
 
 namespace Nop.Plugin.Payments.Manual.Components
 {
     [ViewComponent(Name = "PaymentManual")]
-    public class PaymentManualViewComponent : ViewComponent
+    public class PaymentManualViewComponent : NopViewComponent
     {
-        public async Task<IViewComponentResult> InvokeAsync()
+        public IViewComponentResult Invoke()
         {
             var model = new PaymentInfoModel()
             {
@@ -39,9 +39,10 @@ namespace Nop.Plugin.Payments.Manual.Components
             }
 
             //set postback values (we cannot access "Form" with "GET" requests)
-            if (this.Request.Method != WebRequestMethods.Http.Get)
+            if (Request.Method != WebRequestMethods.Http.Get)
             {
-                var form = this.Request.Form;
+                var form = Request.Form;
+                model.CardholderName = form["CardholderName"];
                 model.CardNumber = form["CardNumber"];
                 model.CardCode = form["CardCode"];
                 var selectedCcType = model.CreditCardTypes.FirstOrDefault(x => x.Value.Equals(form["CreditCardType"], StringComparison.InvariantCultureIgnoreCase));

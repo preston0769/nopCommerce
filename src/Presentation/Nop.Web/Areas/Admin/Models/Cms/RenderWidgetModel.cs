@@ -1,6 +1,6 @@
-﻿using Nop.Web.Framework.Mvc.Models;
+﻿using Nop.Web.Framework.Models;
 
-namespace Nop.Admin.Models.Cms
+namespace Nop.Web.Areas.Admin.Models.Cms
 {
     public partial class RenderWidgetModel : BaseNopModel
     {

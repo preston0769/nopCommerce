@@ -1,29 +1,34 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using FluentValidation.Attributes;
 using Microsoft.AspNetCore.Mvc.Rendering;
-using Nop.Admin.Validators.News;
-using Nop.Web.Framework;
-using Nop.Web.Framework.Mvc;
 using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
+using Nop.Web.Framework.Models;
 
-namespace Nop.Admin.Models.News
+namespace Nop.Web.Areas.Admin.Models.News
 {
-    [Validator(typeof(NewsItemValidator))]
-    public partial class NewsItemModel : BaseNopEntityModel
+    /// <summary>
+    /// Represents a news item model
+    /// </summary>
+    public partial class NewsItemModel : BaseNopEntityModel, IStoreMappingSupportedModel
     {
+        #region Ctor
+
         public NewsItemModel()
         {
-            this.AvailableLanguages = new List<SelectListItem>();
+            AvailableLanguages = new List<SelectListItem>();
 
             SelectedStoreIds = new List<int>();
             AvailableStores = new List<SelectListItem>();
         }
 
+        #endregion
+
+        #region Properties
+
         [NopResourceDisplayName("Admin.ContentManagement.News.NewsItems.Fields.Language")]
         public int LanguageId { get; set; }
+
         public IList<SelectListItem> AvailableLanguages { get; set; }
 
         [NopResourceDisplayName("Admin.ContentManagement.News.NewsItems.Fields.Language")]
@@ -31,8 +36,8 @@ namespace Nop.Admin.Models.News
 
         //store mapping
         [NopResourceDisplayName("Admin.ContentManagement.News.NewsItems.Fields.LimitedToStores")]
-        [UIHint("MultiSelect")]
         public IList<int> SelectedStoreIds { get; set; }
+
         public IList<SelectListItem> AvailableStores { get; set; }
 
         [NopResourceDisplayName("Admin.ContentManagement.News.NewsItems.Fields.Title")]
@@ -49,11 +54,11 @@ namespace Nop.Admin.Models.News
 
         [NopResourceDisplayName("Admin.ContentManagement.News.NewsItems.Fields.StartDate")]
         [UIHint("DateTimeNullable")]
-        public DateTime? StartDate { get; set; }
+        public DateTime? StartDateUtc { get; set; }
 
         [NopResourceDisplayName("Admin.ContentManagement.News.NewsItems.Fields.EndDate")]
         [UIHint("DateTimeNullable")]
-        public DateTime? EndDate { get; set; }
+        public DateTime? EndDateUtc { get; set; }
 
         [NopResourceDisplayName("Admin.ContentManagement.News.NewsItems.Fields.MetaKeywords")]
         public string MetaKeywords { get; set; }
@@ -71,9 +76,12 @@ namespace Nop.Admin.Models.News
         public bool Published { get; set; }
 
         public int ApprovedComments { get; set; }
+
         public int NotApprovedComments { get; set; }
 
         [NopResourceDisplayName("Admin.ContentManagement.News.NewsItems.Fields.CreatedOn")]
         public DateTime CreatedOn { get; set; }
+
+        #endregion
     }
 }

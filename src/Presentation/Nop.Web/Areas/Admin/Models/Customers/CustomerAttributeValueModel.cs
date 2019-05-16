@@ -1,21 +1,24 @@
 ﻿using System.Collections.Generic;
-using FluentValidation.Attributes;
-using Nop.Admin.Validators.Customers;
-using Nop.Web.Framework;
-using Nop.Web.Framework.Localization;
-using Nop.Web.Framework.Mvc;
+using Nop.Web.Framework.Models;
 using Nop.Web.Framework.Mvc.ModelBinding;
-using Nop.Web.Framework.Mvc.Models;
 
-namespace Nop.Admin.Models.Customers
+namespace Nop.Web.Areas.Admin.Models.Customers
 {
-    [Validator(typeof(CustomerAttributeValueValidator))]
+    /// <summary>
+    /// Represents a customer attribute value model
+    /// </summary>
     public partial class CustomerAttributeValueModel : BaseNopEntityModel, ILocalizedModel<CustomerAttributeValueLocalizedModel>
     {
+        #region Ctor
+
         public CustomerAttributeValueModel()
         {
             Locales = new List<CustomerAttributeValueLocalizedModel>();
         }
+
+        #endregion
+
+        #region Properties
 
         public int CustomerAttributeId { get; set; }
 
@@ -30,9 +33,10 @@ namespace Nop.Admin.Models.Customers
 
         public IList<CustomerAttributeValueLocalizedModel> Locales { get; set; }
 
+        #endregion
     }
 
-    public partial class CustomerAttributeValueLocalizedModel : ILocalizedModelLocal
+    public partial class CustomerAttributeValueLocalizedModel : ILocalizedLocaleModel
     {
         public int LanguageId { get; set; }
 

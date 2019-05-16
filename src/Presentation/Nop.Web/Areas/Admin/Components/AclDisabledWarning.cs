@@ -1,12 +1,12 @@
 ﻿using Microsoft.AspNetCore.Mvc;
-using System.Threading.Tasks;
 using Nop.Core.Domain.Catalog;
 using Nop.Services.Configuration;
 using Nop.Services.Stores;
+using Nop.Web.Framework.Components;
 
-namespace Nop.Admin.Components
+namespace Nop.Web.Areas.Admin.Components
 {
-    public class AclDisabledWarningViewComponent : ViewComponent
+    public class AclDisabledWarningViewComponent : NopViewComponent
     {
         private readonly CatalogSettings _catalogSettings;
         private readonly ISettingService _settingService;
@@ -16,35 +16,34 @@ namespace Nop.Admin.Components
             ISettingService settingService,
             IStoreService storeService)
         {
-            this._catalogSettings = catalogSettings;
-            this._settingService = settingService;
-            this._storeService = storeService;
+            _catalogSettings = catalogSettings;
+            _settingService = settingService;
+            _storeService = storeService;
         }
 
-        public async Task<IViewComponentResult> InvokeAsync()
+        public IViewComponentResult Invoke()
         {
             //action displaying notification (warning) to a store owner that "ACL rules" feature is ignored
 
             //default setting
-            bool enabled = _catalogSettings.IgnoreAcl;
+            var enabled = _catalogSettings.IgnoreAcl;
             if (!enabled)
             {
                 //overridden settings
                 var stores = _storeService.GetAllStores();
                 foreach (var store in stores)
                 {
-                    if (!enabled)
-                    {
-                        var catalogSettings = _settingService.LoadSetting<CatalogSettings>(store.Id);
-                        enabled = catalogSettings.IgnoreAcl;
-                    }
+                    var catalogSettings = _settingService.LoadSetting<CatalogSettings>(store.Id);
+                    enabled = catalogSettings.IgnoreAcl;
+
+                    if (enabled)
+                        break;
                 }
             }
 
             //This setting is disabled. No warnings.
             if (!enabled)
-                return Content("");
-
+                return Content(string.Empty);
 
             return View();
         }

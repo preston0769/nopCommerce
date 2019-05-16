@@ -1,21 +1,29 @@
 ﻿using Nop.Core.Caching;
-using Nop.Core.Infrastructure;
-using Nop.Services.Messages;
 using Nop.Services.Tasks;
 
 namespace Nop.Services.Caching
 {
     /// <summary>
-    /// Clear cache schedueled task implementation
+    /// Clear cache scheduled task implementation
     /// </summary>
-    public partial class ClearCacheTask : ITask
+    public partial class ClearCacheTask : IScheduleTask
     {
+        #region Fields
+
         private readonly IStaticCacheManager _staticCacheManager;
+
+        #endregion
+
+        #region Ctor
 
         public ClearCacheTask(IStaticCacheManager staticCacheManager)
         {
-            this._staticCacheManager = staticCacheManager;
+            _staticCacheManager = staticCacheManager;
         }
+
+        #endregion
+
+        #region Methods
 
         /// <summary>
         /// Executes a task
@@ -24,5 +32,7 @@ namespace Nop.Services.Caching
         {
             _staticCacheManager.Clear();
         }
+
+        #endregion
     }
 }
